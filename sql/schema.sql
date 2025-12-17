@@ -10,13 +10,15 @@ CREATE TABLE IF NOT EXISTS users (
     prenom VARCHAR(100) NOT NULL,
     telephone VARCHAR(20),
     photo VARCHAR(255),
+    role ENUM('user', 'admin') DEFAULT 'user',
     actif BOOLEAN DEFAULT TRUE,
     date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     derniere_connexion TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
-    INDEX idx_nom (nom, prenom)
+    INDEX idx_nom (nom, prenom),
+    INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table des clubs d'aviation

@@ -30,6 +30,33 @@ function isLoggedIn() {
 }
 
 /**
+ * Vérifie si l'utilisateur est administrateur
+ * @return bool
+ */
+function isAdmin() {
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+}
+
+/**
+ * Récupère le rôle de l'utilisateur connecté
+ * @return string|null
+ */
+function getUserRole() {
+    return $_SESSION['user_role'] ?? null;
+}
+
+/**
+ * Redirige si l'utilisateur n'est pas admin
+ * @param string $redirectUrl URL de redirection si non admin
+ */
+function requireAdmin($redirectUrl = '../index.php') {
+    if (!isAdmin()) {
+        $_SESSION['error'] = "Accès refusé. Vous devez être administrateur.";
+        redirect($redirectUrl);
+    }
+}
+
+/**
  * Formate une date
  * @param string $date
  * @param string $format
