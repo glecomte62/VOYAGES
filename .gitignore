@@ -1,0 +1,35 @@
+# Fichiers de configuration sensibles
+config/database.php
+.env
+
+# Logs
+logs/*.log
+*.log
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Cache
+cache/*
+!cache/.gitkeep
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Composer
+/vendor/
+composer.phar
+
+# Fichiers temporaires
+tmp/*
+!tmp/.gitkeep
+*.tmp
