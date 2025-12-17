@@ -67,7 +67,9 @@ body {
 .hero-section {
     position: relative;
     min-height: 600px;
-    background: var(--sky-gradient);
+    background: linear-gradient(rgba(30, 58, 138, 0.7), rgba(59, 130, 246, 0.8)), 
+                url('../images/hero-bg.jpg') center/cover no-repeat;
+    background-attachment: fixed;
     display: flex;
     align-items: center;
     justify-content: center;
