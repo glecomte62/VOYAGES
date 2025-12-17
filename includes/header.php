@@ -1,6 +1,15 @@
+<?php
+// Inclure les fonctions si pas déjà fait
+if (!function_exists('isLoggedIn')) {
+    require_once __DIR__ . '/functions.php';
+}
+
+// Déterminer le chemin de base (si on est dans /pages/ ou à la racine)
+$baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
+?>
 <header class="page-header">
     <nav class="page-navbar">
-        <a href="../index.php" class="header-brand">
+        <a href="<?php echo $baseUrl; ?>index.php" class="header-brand">
             <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="url(#skyGradient)"/>
                 <path d="M20 12L28 17V23L20 28L12 23V17L20 12Z" fill="white" opacity="0.8"/>
@@ -21,7 +30,7 @@
         </button>
 
         <div class="nav-menu">
-            <a href="../index.php" class="nav-link">
+            <a href="<?php echo $baseUrl; ?>index.php" class="nav-link">
                 <span class="nav-icon">🏠</span>
                 Accueil
             </a>
@@ -33,10 +42,10 @@
                     <span class="dropdown-arrow">▼</span>
                 </button>
                 <div class="dropdown-menu">
-                    <a href="destinations.php">Toutes les destinations</a>
-                    <a href="destinations.php?type=ulm">Terrains ULM</a>
-                    <a href="destinations.php?type=avion">Aérodromes</a>
-                    <a href="destinations.php?favoris=1">Mes favoris</a>
+                    <a href="<?php echo $baseUrl; ?>pages/destinations.php">Toutes les destinations</a>
+                    <a href="<?php echo $baseUrl; ?>pages/destinations.php?type=ulm">Terrains ULM</a>
+                    <a href="<?php echo $baseUrl; ?>pages/destinations.php?type=avion">Aérodromes</a>
+                    <a href="<?php echo $baseUrl; ?>pages/destinations.php?favoris=1">Mes favoris</a>
                 </div>
             </div>
 
@@ -47,9 +56,9 @@
                     <span class="dropdown-arrow">▼</span>
                 </button>
                 <div class="dropdown-menu">
-                    <a href="clubs.php">Clubs & Aéroclubs</a>
-                    <a href="membres.php">Annuaire pilotes</a>
-                    <a href="evenements.php">Événements</a>
+                    <a href="<?php echo $baseUrl; ?>pages/clubs.php">Clubs & Aéroclubs</a>
+                    <a href="<?php echo $baseUrl; ?>pages/membres.php">Annuaire pilotes</a>
+                    <a href="<?php echo $baseUrl; ?>pages/evenements.php">Événements</a>
                 </div>
             </div>
 
@@ -61,12 +70,12 @@
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="profil.php">Mon profil</a>
-                        <a href="voyages.php">Mes vols</a>
-                        <a href="favoris.php">Mes favoris</a>
-                        <a href="parametres.php">Paramètres</a>
+                        <a href="<?php echo $baseUrl; ?>pages/profil.php">Mon profil</a>
+                        <a href="<?php echo $baseUrl; ?>pages/voyages.php">Mes vols</a>
+                        <a href="<?php echo $baseUrl; ?>pages/favoris.php">Mes favoris</a>
+                        <a href="<?php echo $baseUrl; ?>pages/parametres.php">Paramètres</a>
                         <div class="dropdown-divider"></div>
-                        <a href="logout.php" class="logout-link">Déconnexion</a>
+                        <a href="<?php echo $baseUrl; ?>pages/logout.php" class="logout-link">Déconnexion</a>
                     </div>
                 </div>
                 
@@ -78,24 +87,24 @@
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="admin.php">
+                        <a href="<?php echo $baseUrl; ?>pages/admin.php">
                             <span class="menu-icon">📊</span>
                             Tableau de bord
                         </a>
-                        <a href="admin-users.php">
+                        <a href="<?php echo $baseUrl; ?>pages/admin-users.php">
                             <span class="menu-icon">👥</span>
                             Gestion utilisateurs
                         </a>
-                        <a href="admin-destinations.php">
+                        <a href="<?php echo $baseUrl; ?>pages/admin-destinations.php">
                             <span class="menu-icon">🗺️</span>
                             Gestion destinations
                         </a>
-                        <a href="admin-clubs.php">
+                        <a href="<?php echo $baseUrl; ?>pages/admin-clubs.php">
                             <span class="menu-icon">🏛️</span>
                             Gestion clubs
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="admin-settings.php">
+                        <a href="<?php echo $baseUrl; ?>pages/admin-settings.php">
                             <span class="menu-icon">⚙️</span>
                             Paramètres
                         </a>
@@ -103,8 +112,8 @@
                 </div>
                 <?php endif; ?>
             <?php else: ?>
-                <a href="login.php" class="btn-login">Connexion</a>
-                <a href="register.php" class="btn-register">Inscription</a>
+                <a href="<?php echo $baseUrl; ?>pages/login.php" class="btn-login">Connexion</a>
+                <a href="<?php echo $baseUrl; ?>pages/register.php" class="btn-register">Inscription</a>
             <?php endif; ?>
         </div>
     </nav>
