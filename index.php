@@ -113,38 +113,6 @@ $nb_clubs = $stats['total'] ?? 0;
         </nav>
     </header>
 
-    <script>
-    function toggleMobileMenu() {
-        const menu = document.querySelector('.nav-menu');
-        const toggle = document.querySelector('.mobile-menu-toggle');
-        menu.classList.toggle('active');
-        toggle.classList.toggle('active');
-    }
-
-    // Gestion des dropdowns
-    document.addEventListener('DOMContentLoaded', function() {
-        const dropdowns = document.querySelectorAll('.nav-dropdown');
-        
-        dropdowns.forEach(dropdown => {
-            const toggle = dropdown.querySelector('.dropdown-toggle');
-            
-            toggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                // Fermer les autres dropdowns
-                dropdowns.forEach(d => {
-                    if (d !== dropdown) d.classList.remove('active');
-                });
-                dropdown.classList.toggle('active');
-            });
-        });
-
-        // Fermer les dropdowns en cliquant ailleurs
-        document.addEventListener('click', function() {
-            dropdowns.forEach(d => d.classList.remove('active'));
-        });
-    });
-    </script>
-
     <main>
         <!-- Hero Section -->
         <section class="hero-section">
@@ -280,5 +248,34 @@ $nb_clubs = $stats['total'] ?? 0;
     </footer>
 
     <script src="assets/js/main.js"></script>
+    <script>
+    function toggleMobileMenu() {
+        const menu = document.querySelector('.nav-menu');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        menu.classList.toggle('active');
+        toggle.classList.toggle('active');
+    }
+
+    // Gestion des dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        
+        dropdowns.forEach(dropdown => {
+            const toggle = dropdown.querySelector('.dropdown-toggle');
+            
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdowns.forEach(d => {
+                    if (d !== dropdown) d.classList.remove('active');
+                });
+                dropdown.classList.toggle('active');
+            });
+        });
+
+        document.addEventListener('click', function() {
+            dropdowns.forEach(d => d.classList.remove('active'));
+        });
+    });
+    </script>
 </body>
 </html>
