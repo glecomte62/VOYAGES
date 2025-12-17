@@ -69,6 +69,39 @@
                         <a href="logout.php" class="logout-link">Déconnexion</a>
                     </div>
                 </div>
+                
+                <?php if (isAdmin()): ?>
+                <div class="nav-dropdown nav-admin">
+                    <button class="nav-link dropdown-toggle nav-link-admin">
+                        <span class="nav-icon">⚙️</span>
+                        Administration
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="admin.php">
+                            <span class="menu-icon">📊</span>
+                            Tableau de bord
+                        </a>
+                        <a href="admin-users.php">
+                            <span class="menu-icon">👥</span>
+                            Gestion utilisateurs
+                        </a>
+                        <a href="admin-destinations.php">
+                            <span class="menu-icon">🗺️</span>
+                            Gestion destinations
+                        </a>
+                        <a href="admin-clubs.php">
+                            <span class="menu-icon">🏛️</span>
+                            Gestion clubs
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="admin-settings.php">
+                            <span class="menu-icon">⚙️</span>
+                            Paramètres
+                        </a>
+                    </div>
+                </div>
+                <?php endif; ?>
             <?php else: ?>
                 <a href="login.php" class="btn-login">Connexion</a>
                 <a href="register.php" class="btn-register">Inscription</a>

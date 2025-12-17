@@ -266,6 +266,42 @@
     }
 }
 
+/* Menu Administration */
+.nav-admin .nav-link-admin {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+.nav-admin .nav-link-admin:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+}
+
+.nav-admin .dropdown-menu {
+    min-width: 250px;
+}
+
+.nav-admin .dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.nav-admin .menu-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.nav-admin .dropdown-divider {
+    margin: 0.5rem 0;
+    height: 1px;
+    background: var(--border-color);
+}
+
 @media (max-width: 480px) {
     .page-navbar {
         padding: 0.75rem 1rem;
