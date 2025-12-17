@@ -63,7 +63,7 @@ body {
     50% { transform: translateY(-10px); }
 }
 
-.naHero Section */
+/* Hero Section */
 .hero-section {
     position: relative;
     min-height: 600px;
