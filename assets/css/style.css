@@ -160,20 +160,6 @@ body {
     color: var(--primary-color);
 }
 
-.btn-login {
-    color: var(--primary-color) !important;
-    border: 2px solid var(--primary-color);
-}
-
-.btn-register {
-    background: var(--sky-gradient) !important;
-    color: white !important;
-}
-
-.btn-logout {
-    color: var(--danger-color) !important;
-}
-
 /* Main Content */
 main {
     max-width: 1200px;
