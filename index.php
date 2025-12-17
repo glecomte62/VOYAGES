@@ -30,6 +30,7 @@ $nb_clubs = $stats['total'] ?? 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VOYAGES ULM - Partagez vos aventures aériennes</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/header.css">
     <link rel="stylesheet" href="assets/css/home.css">
 </head>
 <body>
