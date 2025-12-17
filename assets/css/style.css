@@ -1,13 +1,18 @@
-/* VOYAGES - Styles principaux */
+/* VOYAGES ULM - Styles principaux */
 
 :root {
-    --primary-color: #2563eb;
+    --primary-color: #3b82f6;
+    --primary-dark: #2563eb;
     --secondary-color: #64748b;
+    --accent-color: #f59e0b;
     --success-color: #10b981;
     --danger-color: #ef4444;
     --bg-color: #f8fafc;
     --text-color: #1e293b;
+    --text-light: #64748b;
     --border-color: #e2e8f0;
+    --white: #ffffff;
+    --sky-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 * {
@@ -24,16 +29,17 @@ body {
 }
 
 /* Header & Navigation */
-header {
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.main-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
 }
 
-nav {
-    max-width: 1200px;
+.navbar {
+    max-width: 1400px;
     margin: 0 auto;
     padding: 1rem 2rem;
     display: flex;
@@ -41,26 +47,164 @@ nav {
     align-items: center;
 }
 
-nav h1 {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-}
-
-nav ul {
+.nav-brand {
     display: flex;
-    list-style: none;
-    gap: 2rem;
+    align-items: center;
+    gap: 1rem;
 }
 
-nav a {
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
+.nav-brand .logo {
+    font-size: 2rem;
+    animation: float 3s ease-in-out infinite;
 }
 
-nav a:hover {
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.naHero Section */
+.hero-section {
+    position: relative;
+    min-height: 600px;
+    background: var(--sky-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><path d="M0,300 Q300,200 600,300 T1200,300 L1200,600 L0,600 Z" fill="rgba(255,255,255,0.1)"/></svg>') no-repeat bottom;
+    background-size: cover;
+}
+
+.hero-content {
+    position: relative;
+    text-align: center;
+    color: white;
+    max-width: 900px;
+    padding: 3rem 2rem;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    font-weight: 300;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-hero-primary {
+    background: white;
     color: var(--primary-color);
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s;
+}
+
+.btn-hero-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.btn-hero-secondary {
+    background: transparent;
+    color: white;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    border: 2px solid white;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-hero-secondary:hover {
+    background: white;
+    color: var(--primary-color);
+}
+
+.hero-badge {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 3;
+}
+
+.badge-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.hero-badge p {
+    margin: 0.25rem 0;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.hero-badge h3 {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    margin: 0.5rem 0;
+    font-weight: 700;
+}
+
+.badge-location {
+    font-weight: 600;
+    color: var(--text-color) !important
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.btn-login {
+    color: var(--primary-color) !important;
+    border: 2px solid var(--primary-color);
+}
+
+.btn-register {
+    background: var(--sky-gradient) !important;
+    color: white !important;
+}
+
+.btn-logout {
+    color: var(--danger-color) !important;
 }
 
 /* Main Content */
