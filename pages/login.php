@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Veuillez remplir tous les champs';
     } else {
         $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT id, email, password, nom, prenom FROM users WHERE email = ? AND actif = 1");
+        $stmt = $pdo->prepare("SELECT id, email, password, nom, prenom, role FROM users WHERE email = ? AND actif = 1");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_nom'] = $user['nom'];
             $_SESSION['user_prenom'] = $user['prenom'];
+            $_SESSION['user_role'] = $user['role'] ?? 'user';
             
             // Mise à jour de la dernière connexion
             $stmt = $pdo->prepare("UPDATE users SET derniere_connexion = NOW() WHERE id = ?");

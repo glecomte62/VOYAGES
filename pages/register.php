@@ -123,8 +123,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                value="<?php echo h($_POST['telephone'] ?? ''); ?>">
                     </div>
                     
-                <button type="submit" class="btn btn-primary btn-full">S'inscrire</button>
-            </form>
+                    <div class="form-group">
+                        <label for="password">Mot de passe *</label>
+                        <input type="password" id="password" name="password" required minlength="8">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password_confirm">Confirmer le mot de passe *</label>
+                        <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">S'inscrire</button>
+                </form>
             <?php endif; ?>
             
             <div class="auth-footer">
@@ -134,17 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p class="auth-home">
                     <a href="../index.php">← Retour à l'accueil</a>
                 </p>
-            </div>        <label for="password_confirm">Confirmer le mot de passe *</label>
-                        <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">S'inscrire</button>
-                </form>
-            <?php endif; ?>
-            
-            <p class="auth-link">
-                Déjà inscrit ? <a href="login.php">Se connecter</a>
-            </p>
+            </div>
         </div>
     </div>
 </body>
