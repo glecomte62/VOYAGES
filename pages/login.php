@@ -2,7 +2,8 @@
 /**
  * Page de connexion
  */
-session_start();
+
+require_once '../includes/session.php';
 
 // Si déjà connecté, rediriger vers l'accueil
 if (isset($_SESSION['user_id'])) {

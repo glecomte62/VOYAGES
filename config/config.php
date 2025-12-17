@@ -25,11 +25,3 @@ if (ENVIRONMENT === 'development') {
 
 // Fuseau horaire
 date_default_timezone_set('Europe/Paris');
-
-// Configuration de session
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // Mettre à 1 en HTTPS
-
-// Durée de session (24 heures)
-ini_set('session.gc_maxlifetime', 86400);

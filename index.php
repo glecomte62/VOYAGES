@@ -1,11 +1,10 @@
 <?php
 /**
- * VOYAGES - Application de gestion de voyages
+ * VOYAGES ULM - Catalogue de destinations pour pilotes
  * Page d'accueil
  */
 
-session_start();
-
+require_once 'includes/session.php';
 require_once 'config/database.php';
 require_once 'includes/functions.php';
 
