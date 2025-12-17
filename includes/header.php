@@ -1,22 +1,17 @@
 <header class="page-header">
     <nav class="page-navbar">
         <a href="../index.php" class="header-brand">
-            <div class="brand-logo">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="url(#skyGradient)"/>
-                    <path d="M20 12L28 17V23L20 28L12 23V17L20 12Z" fill="white" opacity="0.8"/>
-                    <defs>
-                        <linearGradient id="skyGradient" x1="5" y1="5" x2="35" y2="35">
-                            <stop offset="0%" stop-color="#3b82f6"/>
-                            <stop offset="100%" stop-color="#8b5cf6"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-            </div>
-            <div class="brand-text">
-                <span class="brand-name">VOYAGES ULM</span>
-                <span class="brand-tagline">Partagez vos aventures</span>
-            </div>
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="url(#skyGradient)"/>
+                <path d="M20 12L28 17V23L20 28L12 23V17L20 12Z" fill="white" opacity="0.8"/>
+                <defs>
+                    <linearGradient id="skyGradient" x1="5" y1="5" x2="35" y2="35">
+                        <stop offset="0%" stop-color="#3b82f6"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="brand-name">VOYAGES ULM</span>
         </a>
 
         <button class="mobile-menu-toggle" aria-label="Menu" onclick="toggleMobileMenu()">
@@ -28,27 +23,52 @@
         <div class="nav-menu">
             <a href="../index.php" class="nav-link">
                 <span class="nav-icon">🏠</span>
-                <span>Accueil</span>
+                Accueil
             </a>
-            <a href="destinations.php" class="nav-link">
-                <span class="nav-icon">🗺️</span>
-                <span>Destinations</span>
-            </a>
-            <a href="clubs.php" class="nav-link">
-                <span class="nav-icon">👥</span>
-                <span>Clubs</span>
-            </a>
+            
+            <div class="nav-dropdown">
+                <button class="nav-link dropdown-toggle">
+                    <span class="nav-icon">🗺️</span>
+                    Destinations
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="destinations.php">Toutes les destinations</a>
+                    <a href="destinations.php?type=ulm">Terrains ULM</a>
+                    <a href="destinations.php?type=avion">Aérodromes</a>
+                    <a href="destinations.php?favoris=1">Mes favoris</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <button class="nav-link dropdown-toggle">
+                    <span class="nav-icon">👥</span>
+                    Communauté
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="clubs.php">Clubs & Aéroclubs</a>
+                    <a href="membres.php">Annuaire pilotes</a>
+                    <a href="evenements.php">Événements</a>
+                </div>
+            </div>
+
             <?php if (isLoggedIn()): ?>
-                <a href="voyages.php" class="nav-link">
-                    <span class="nav-icon">✈️</span>
-                    <span>Mes Vols</span>
-                </a>
-                <div class="nav-divider"></div>
-                <a href="profil.php" class="nav-link nav-link-user">
-                    <span class="nav-icon">👤</span>
-                    <span>Mon Profil</span>
-                </a>
-                <a href="logout.php" class="btn-logout">Déconnexion</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle nav-link-user">
+                        <span class="nav-icon">👤</span>
+                        Mon Compte
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="profil.php">Mon profil</a>
+                        <a href="voyages.php">Mes vols</a>
+                        <a href="favoris.php">Mes favoris</a>
+                        <a href="parametres.php">Paramètres</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="logout.php" class="logout-link">Déconnexion</a>
+                    </div>
+                </div>
             <?php else: ?>
                 <a href="login.php" class="btn-login">Connexion</a>
                 <a href="register.php" class="btn-register">Inscription</a>
@@ -64,4 +84,27 @@ function toggleMobileMenu() {
     menu.classList.toggle('active');
     toggle.classList.toggle('active');
 }
+
+// Gestion des dropdowns
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+    
+    dropdowns.forEach(dropdown => {
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Fermer les autres dropdowns
+            dropdowns.forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+            dropdown.classList.toggle('active');
+        });
+    });
+
+    // Fermer les dropdowns en cliquant ailleurs
+    document.addEventListener('click', function() {
+        dropdowns.forEach(d => d.classList.remove('active'));
+    });
+});
 </script>
