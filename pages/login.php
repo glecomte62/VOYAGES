@@ -58,7 +58,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="auth-container">
         <div class="auth-box">
-            <h1>✈️ VOYAGES ULM</h1>
+            <div class="auth-logo">
+                <h1>✈️ VOYAGES ULM</h1>
+                <p class="tagline">Catalogue de destinations pour pilotes</p>
+            </div>
+            
+            <div class="club-badge">
+                <p>🏛️ Application offerte par le</p>
+                <h3>Club ULM Évasion</h3>
+                <p class="location">Maubeuge</p>
+            </div>
+            
             <h2>Connexion</h2>
             
             <?php if ($error): ?>
@@ -67,22 +77,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <form method="POST" action="">
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">📧 Email</label>
                     <input type="email" id="email" name="email" required 
+                           placeholder="votre.email@exemple.com"
                            value="<?php echo h($_POST['email'] ?? ''); ?>">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" name="password" required>
+                    <label for="password">🔒 Mot de passe</label>
+                    <input type="password" id="password" name="password" required
+                           placeholder="Votre mot de passe">
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Se connecter</button>
+                <button type="submit" class="btn btn-primary btn-full">
+                    Se connecter
+                </button>
             </form>
             
-            <p class="auth-link">
-                Pas encore inscrit ? <a href="register.php">Créer un compte</a>
-            </p>
+            <div class="auth-footer">
+                <p class="auth-link">
+                    Pas encore inscrit ? <a href="register.php">Créer un compte</a>
+                </p>
+                <p class="auth-home">
+                    <a href="../index.php">← Retour à l'accueil</a>
+                </p>
+            </div>
         </div>
     </div>
 </body>

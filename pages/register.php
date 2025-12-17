@@ -72,7 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="auth-container">
         <div class="auth-box">
-            <h1>✈️ VOYAGES ULM</h1>
+            <div class="auth-logo">
+                <h1>✈️ VOYAGES ULM</h1>
+                <p class="tagline">Catalogue de destinations pour pilotes</p>
+            </div>
+            
+            <div class="club-badge">
+                <p>🏛️ Application offerte par le</p>
+                <h3>Club ULM Évasion</h3>
+                <p class="location">Maubeuge</p>
+            </div>
+            
             <h2>Créer un compte</h2>
             
             <?php if ($error): ?>
@@ -112,13 +122,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                value="<?php echo h($_POST['telephone'] ?? ''); ?>">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="password">Mot de passe * (min. 8 caractères)</label>
-                        <input type="password" id="password" name="password" required minlength="8">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password_confirm">Confirmer le mot de passe *</label>
+                <button type="submit" class="btn btn-primary btn-full">S'inscrire</button>
+            </form>
+            <?php endif; ?>
+            
+            <div class="auth-footer">
+                <p class="auth-link">
+                    Déjà inscrit ? <a href="login.php">Se connecter</a>
+                </p>
+                <p class="auth-home">
+                    <a href="../index.php">← Retour à l'accueil</a>
+                </p>
+            </div>        <label for="password_confirm">Confirmer le mot de passe *</label>
                         <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
                     </div>
                     
