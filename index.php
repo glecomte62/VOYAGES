@@ -15,40 +15,50 @@ require_once 'includes/functions.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOYAGES - Gestion de vos voyages</title>
+    <title>VOYAGES ULM - Catalogue de destinations pour pilotes</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
         <nav>
-            <h1>VOYAGES</h1>
+            <h1>✈️ VOYAGES ULM</h1>
             <ul>
                 <li><a href="index.php">Accueil</a></li>
-                <li><a href="pages/voyages.php">Mes Voyages</a></li>
-                <li><a href="pages/itineraires.php">Itinéraires</a></li>
-                <li><a href="pages/reservations.php">Réservations</a></li>
+                <li><a href="pages/destinations.php">Destinations</a></li>
+                <li><a href="pages/clubs.php">Clubs</a></li>
+                <?php if (isLoggedIn()): ?>
+                    <li><a href="pages/voyages.php">Mes Vols</a></li>
+                    <li><a href="pages/profil.php">Mon Profil</a></li>
+                    <li><a href="pages/logout.php">Déconnexion</a></li>
+                <?php else: ?>
+                    <li><a href="pages/login.php">Connexion</a></li>
+                    <li><a href="pages/register.php">Inscription</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
 
     <main>
         <section class="hero">
-            <h2>Bienvenue dans votre gestionnaire de voyages</h2>
-            <p>Planifiez, organisez et documentez tous vos voyages en un seul endroit.</p>
+            <h2>Découvrez les meilleures destinations en ULM et petit avion</h2>
+            <p>Partagez vos découvertes avec la communauté des pilotes</p>
+            <?php if (!isLoggedIn()): ?>
+                <a href="pages/register.php" class="btn btn-primary">Rejoindre la communauté</a>
+            <?php endif; ?>
         </section>
 
         <section class="features">
             <div class="feature">
-                <h3>📍 Planification d'itinéraires</h3>
-                <p>Créez des itinéraires détaillés pour vos voyages</p>
+                <h3>📍 Catalogue de destinations</h3>
+                <p>Trouvez des aérodromes accessibles en ULM et petit avion</p>
             </div>
             <div class="feature">
-                <h3>✈️ Gestion des réservations</h3>
-                <p>Centralisez toutes vos réservations (vols, hôtels, activités)</p>
+                <h3>🏛️ Clubs référencés</h3>
+                <p>Rejoignez votre club et connectez-vous avec d'autres membres</p>
             </div>
             <div class="feature">
-                <h3>📝 Documentation</h3>
-                <p>Gardez une trace de vos souvenirs et expériences</p>
+                <h3>🤝 Communauté</h3>
+                <p>Partagez vos expériences, photos et recommandations</p>
             </div>
         </section>
     </main>

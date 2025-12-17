@@ -1,7 +1,7 @@
 # Instructions Copilot - Projet VOYAGES
 
 ## Type de projet
-Application web de gestion de voyages en PHP/MySQL
+Application web de catalogue de destinations pour pilotes ULM et petits avions
 
 ## Stack technique
 - **Backend**: PHP
@@ -17,9 +17,12 @@ Application web de gestion de voyages en PHP/MySQL
 - **Chemin distant**: /
 
 ## Fonctionnalités principales
-- Planification d'itinéraires
-- Gestion des réservations
-- Documentation des voyages
+- **Authentification** : Inscription et connexion par email/mot de passe
+- **Profil membre** : Nom, prénom, téléphone, photo, email
+- **Clubs** : Base de données des clubs d'aviation avec recherche facile
+- **Liaison clubs** : Association des membres à un ou plusieurs clubs
+- **Catalogue de destinations** : Aérodromes accessibles en ULM/petit avion
+- **Partage** : Avis, photos et recommandations entre membres
 
 ## Étapes de configuration
 
