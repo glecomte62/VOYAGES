@@ -45,18 +45,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetch()) {
             $error = 'Cet email est déjà utilisé';
         } else {
-            // Créer le compte
-            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            // Gérer l'upload de la photo
+            $photoFilename = null;
+            if (isset($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+                $uploadResult = uploadPhoto($_FILES['photo']);
+                if ($uploadResult['success']) {
+                    $photoFilename = $uploadResult['filename'];
+                } else {
+                    $error = $uploadResult['error'];
+                }
+            }
             
-            $stmt = $pdo->prepare("
-                INSERT INTO users (email, password, nom, prenom, telephone) 
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            
-            if ($stmt->execute([$email, $password_hash, $nom, $prenom, $telephone])) {
-                $success = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
-            } else {
-                $error = 'Erreur lors de la création du compte';
+            // Créer le compte si pas d'erreur
+            if (empty($error)) {
+                $password_hash = password_hash($password, PASSWORD_DEFAULT);
+                
+                $stmt = $pdo->prepare("
+                    INSERT INTO users (email, password, nom, prenom, telephone, photo) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                
+                if ($stmt->execute([$email, $password_hash, $nom, $prenom, $telephone, $photoFilename])) {
+                    $success = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
+                } else {
+                    $error = 'Erreur lors de la création du compte';
+                    // Supprimer la photo si échec
+                    if ($photoFilename) {
+                        deletePhoto($photoFilename);
+                    }
+                }
             }
         }
     }
@@ -96,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <br><a href="login.php">Se connecter maintenant</a>
                 </div>
             <?php else: ?>
-                <form method="POST" action="">
+                <form method="POST" action="" enctype="multipart/form-data">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="prenom">Prénom *</label>
@@ -124,8 +141,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     
                     <div class="form-group">
+                        <label for="photo">Photo de profil</label>
+                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/gif,image/webp">
+                        <small class="form-help">JPG, PNG, GIF ou WEBP - Max 5 Mo</small>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="password">Mot de passe *</label>
                         <input type="password" id="password" name="password" required minlength="8">
+                        <small class="form-help">Au moins 8 caractères</small>
                     </div>
                     
                     <div class="form-group">
