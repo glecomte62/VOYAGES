@@ -310,15 +310,18 @@ function deletePhoto($filename, $uploadDir = '../uploads/photos/') {
  * @return bool
  */
 function logConnexion($userId, $email, $statut) {
-    global $conn;
-    
-    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-    
-    $stmt = $conn->prepare("INSERT INTO logs_connexions (user_id, email, statut, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issss", $userId, $email, $statut, $ipAddress, $userAgent);
-    
-    return $stmt->execute();
+    try {
+        $pdo = getDBConnection();
+        
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+        
+        $stmt = $pdo->prepare("INSERT INTO logs_connexions (user_id, email, statut, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)");
+        return $stmt->execute([$userId, $email, $statut, $ipAddress, $userAgent]);
+    } catch (Exception $e) {
+        error_log("Erreur log connexion: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -331,13 +334,16 @@ function logConnexion($userId, $email, $statut) {
  * @return bool
  */
 function logOperation($userId, $action, $tableAffectee, $idElement = null, $details = null) {
-    global $conn;
-    
-    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    
-    $stmt = $conn->prepare("INSERT INTO logs_operations (user_id, action, table_affectee, id_element, details, ip_address) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ississ", $userId, $action, $tableAffectee, $idElement, $details, $ipAddress);
-    
-    return $stmt->execute();
+    try {
+        $pdo = getDBConnection();
+        
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        
+        $stmt = $pdo->prepare("INSERT INTO logs_operations (user_id, action, table_affectee, id_element, details, ip_address) VALUES (?, ?, ?, ?, ?, ?)");
+        return $stmt->execute([$userId, $action, $tableAffectee, $idElement, $details, $ipAddress]);
+    } catch (Exception $e) {
+        error_log("Erreur log opération: " . $e->getMessage());
+        return false;
+    }
 }
 
