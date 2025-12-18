@@ -698,22 +698,27 @@ function displayAccess($destination) {
                             
                             <?php if (isLoggedIn()): ?>
                                 <!-- Affichage complet pour les membres connectés -->
-                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
                                     <?php foreach ($clubs_membres[$club['id']] as $membre): ?>
                                         <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border: 2px solid #bae6fd; transition: all 0.3s;">
                                             <?php if ($membre['photo']): ?>
                                                 <img src="../uploads/users/<?php echo h($membre['photo']); ?>" 
                                                      alt="<?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>"
-                                                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0ea5e9;">
+                                                     style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #0ea5e9; flex-shrink: 0;">
                                             <?php else: ?>
-                                                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #84cc16 100%); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white; font-weight: 700; border: 2px solid #84cc16;">
+                                                <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #84cc16 100%); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 700; border: 3px solid #84cc16; flex-shrink: 0;">
                                                     <?php echo strtoupper(substr($membre['prenom'], 0, 1) . substr($membre['nom'], 0, 1)); ?>
                                                 </div>
                                             <?php endif; ?>
                                             <div style="flex: 1; min-width: 0;">
-                                                <div style="color: #0c4a6e; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">
+                                                <div style="color: #0c4a6e; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem;">
                                                     <?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>
                                                 </div>
+                                                <?php if ($membre['email']): ?>
+                                                    <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                        ✉️ <a href="mailto:<?php echo h($membre['email']); ?>" style="color: #0ea5e9; text-decoration: none;" title="<?php echo h($membre['email']); ?>"><?php echo h($membre['email']); ?></a>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <?php if ($membre['telephone']): ?>
                                                     <div style="color: #0ea5e9; font-size: 0.75rem;">
                                                         📞 <a href="tel:<?php echo h($membre['telephone']); ?>" style="color: inherit; text-decoration: none;"><?php echo h($membre['telephone']); ?></a>
