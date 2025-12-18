@@ -142,31 +142,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .club-badge {
-            text-align: center;
+            text-align: left;
             padding: 1.5rem;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            background: linear-gradient(135deg, #fef3c7 0%, #d9f99d 100%);
             border-radius: 12px;
             margin-bottom: 2rem;
-        }
-        
-        .club-badge img {
-            width: 80px;
-            height: auto;
-            margin: 0 auto 0.5rem;
-            border-radius: 8px;
-        }
-        
-        .club-badge p {
-            margin: 0.25rem 0;
-            color: #64748b;
-            font-size: 0.9rem;
+            border-left: 4px solid #84cc16;
         }
         
         .club-badge h3 {
-            color: #0ea5e9;
-            font-size: 1.3rem;
-            margin: 0.5rem 0;
+            color: #065f46;
+            font-size: 1.2rem;
+            margin: 0 0 1rem 0;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .club-badge p {
+            margin: 0.5rem 0;
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .club-badge strong {
+            color: #065f46;
         }
         
         .form-row {
@@ -277,9 +279,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <div class="auth-card">
             <div class="club-badge">
-                <img src="../assets/images/LOGO-LEGER.jpeg" alt="Logo Voyages ULM">
-                <p>Une initiative de</p>
-                <p class="location">Maubeuge</p>
+                <h3>🤝 Rejoignez notre communauté ULM</h3>
+                <p>Vos informations (nom, prénom, photo et clubs) seront <strong>partagées avec les autres membres</strong> de cette plateforme pour favoriser les échanges et créer une véritable cohésion au sein de notre communauté.</p>
+                <p>Notre but est de <strong>rassembler tous les passionnés d'aviation légère</strong> autour de notre passion commune !</p>
+                <p>💡 <strong>N'hésitez pas à ajouter une photo de vous</strong> : elle permet aux autres pilotes de vous identifier facilement. Si vous avez une question sur un terrain et que vous voyez qu'un membre y vole régulièrement via son club, ce sera plus simple de le contacter et d'échanger !</p>
             </div>
             
             <?php if ($error): ?>
