@@ -1,6 +1,6 @@
 <?php
 /**
- * Page de profil utilisateur
+ * Page de profil utilisateur - Version modernisée
  */
 
 require_once '../includes/session.php';
@@ -28,6 +28,32 @@ if (!$user) {
     exit;
 }
 
+// Récupérer les clubs de l'utilisateur
+$userClubs = [];
+try {
+    $stmtClubs = $pdo->prepare("
+        SELECT c.id, c.nom, c.ville, c.code_oaci
+        FROM clubs c
+        INNER JOIN user_clubs uc ON c.id = uc.club_id
+        WHERE uc.user_id = ?
+        ORDER BY c.nom ASC
+    ");
+    $stmtClubs->execute([$_SESSION['user_id']]);
+    $userClubs = $stmtClubs->fetchAll();
+} catch (PDOException $e) {
+    // Table user_clubs n'existe pas encore
+}
+
+// Compter les contributions
+$nbDestinations = 0;
+try {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM destinations WHERE created_by = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $nbDestinations = $stmt->fetchColumn();
+} catch (PDOException $e) {
+    // Colonne created_by n'existe pas encore
+}
+
 // Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nom = trim($_POST['nom'] ?? '');
@@ -44,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Email invalide';
     } else {
-        // Vérifier si l'email est déjà utilisé par un autre utilisateur
+        // Vérifier si l'email est déjà utilisé
         if ($email !== $user['email']) {
             $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
             $stmt->execute([$email, $_SESSION['user_id']]);
@@ -70,49 +96,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Gérer l'upload de photo
-        $photoUpdated = false;
         $newPhotoFilename = $user['photo'];
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
             $uploadResult = uploadPhoto($_FILES['photo']);
             if ($uploadResult['success']) {
-                // Supprimer l'ancienne photo
                 if ($user['photo']) {
                     deletePhoto($user['photo']);
                 }
                 $newPhotoFilename = $uploadResult['filename'];
-                $photoUpdated = true;
             } else {
                 $error = $uploadResult['error'];
             }
         }
         
-        // Mettre à jour si pas d'erreur
+        // Mettre à jour
         if (empty($error)) {
             if ($passwordUpdated) {
-                $stmt = $pdo->prepare("
-                    UPDATE users 
-                    SET nom = ?, prenom = ?, telephone = ?, email = ?, password = ?, photo = ?
-                    WHERE id = ?
-                ");
+                $stmt = $pdo->prepare("UPDATE users SET nom = ?, prenom = ?, telephone = ?, email = ?, password = ?, photo = ? WHERE id = ?");
                 $password_hash = password_hash($new_password, PASSWORD_DEFAULT);
                 $stmt->execute([$nom, $prenom, $telephone, $email, $password_hash, $newPhotoFilename, $_SESSION['user_id']]);
             } else {
-                $stmt = $pdo->prepare("
-                    UPDATE users 
-                    SET nom = ?, prenom = ?, telephone = ?, email = ?, photo = ?
-                    WHERE id = ?
-                ");
+                $stmt = $pdo->prepare("UPDATE users SET nom = ?, prenom = ?, telephone = ?, email = ?, photo = ? WHERE id = ?");
                 $stmt->execute([$nom, $prenom, $telephone, $email, $newPhotoFilename, $_SESSION['user_id']]);
             }
             
-            // Mettre à jour la session
             $_SESSION['user_nom'] = $nom;
             $_SESSION['user_prenom'] = $prenom;
             $_SESSION['user_email'] = $email;
             
             $success = 'Profil mis à jour avec succès';
             
-            // Recharger les données
             $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$_SESSION['user_id']]);
             $user = $stmt->fetch();
@@ -128,88 +141,413 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Mon Profil - VOYAGES ULM</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
+    <style>
+        body {
+            background: url('../assets/images/hero-bg.jpg') center/cover no-repeat fixed;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .hero-banner {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%);
+            padding: 3rem 2rem;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.2);
+            position: relative;
+            overflow: hidden;
+            margin-top: -2rem;
+        }
+        
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.125rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar-placeholder {
+            font-size: 4rem;
+            color: white;
+            font-weight: 700;
+        }
+        
+        .profile-name {
+            text-align: center;
+            font-size: 1.75rem;
+            color: #0c4a6e;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-role {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8fafc;
+            border-radius: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0ea5e9;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .clubs-list {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #f1f5f9;
+        }
+        
+        .clubs-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        
+        .club-item {
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .club-item-icon {
+            font-size: 1.5rem;
+        }
+        
+        .club-item-name {
+            font-weight: 600;
+            color: #0c4a6e;
+        }
+        
+        .club-item-city {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .form-section h3 {
+            color: #0c4a6e;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0f2fe;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #0c4a6e;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .form-help {
+            display: block;
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 1.5rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8fafc;
+            color: #64748b;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <?php include '../includes/header.php'; ?>
-    
-    <main class="main-content">
-        <div class="container">
-            <div class="page-header-title">
-                <h1>Mon Profil</h1>
-                <p>Gérez vos informations personnelles</p>
-            </div>
-            
-            <?php if ($error): ?>
-                <div class="error-message"><?php echo h($error); ?></div>
-            <?php endif; ?>
-            
-            <?php if ($success): ?>
-                <div class="success-message"><?php echo h($success); ?></div>
-            <?php endif; ?>
-            
-            <div class="profile-container">
-                <div class="profile-photo-section">
-                    <div class="profile-photo">
+
+    <div class="hero-banner">
+        <h1 class="hero-title">👤 Mon Profil</h1>
+        <p class="hero-subtitle">Gérez vos informations personnelles et vos clubs</p>
+    </div>
+
+    <div class="container">
+        <?php if ($error): ?>
+            <div class="alert alert-error"><?php echo h($error); ?></div>
+        <?php endif; ?>
+        
+        <?php if ($success): ?>
+            <div class="alert alert-success"><?php echo h($success); ?></div>
+        <?php endif; ?>
+        
+        <div class="profile-grid">
+            <div>
+                <div class="profile-card">
+                    <div class="profile-avatar">
                         <?php if ($user['photo']): ?>
-                            <img src="../uploads/photos/<?php echo h($user['photo']); ?>" alt="Photo de profil">
+                            <img src="../uploads/photos/<?php echo h($user['photo']); ?>" alt="Photo">
                         <?php else: ?>
-                            <div class="photo-placeholder">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
+                            <div class="profile-avatar-placeholder">
+                                <?php echo strtoupper(substr($user['prenom'], 0, 1) . substr($user['nom'], 0, 1)); ?>
                             </div>
                         <?php endif; ?>
                     </div>
-                    <div class="profile-info">
-                        <h2><?php echo h($user['prenom'] . ' ' . $user['nom']); ?></h2>
-                        <p class="role-badge badge-<?php echo h($user['role']); ?>">
-                            <?php echo $user['role'] === 'admin' ? 'Administrateur' : 'Membre'; ?>
-                        </p>
-                        <p class="user-since">Membre depuis <?php echo formatDate($user['created_at'], 'd F Y'); ?></p>
+                    
+                    <h2 class="profile-name"><?php echo h($user['prenom'] . ' ' . $user['nom']); ?></h2>
+                    
+                    <div class="profile-role">
+                        <?php if ($user['role'] === 'admin'): ?>
+                            ⭐ Administrateur
+                        <?php else: ?>
+                            👤 Membre
+                        <?php endif; ?>
+                        • Depuis <?php echo date('m/Y', strtotime($user['created_at'])); ?>
                     </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value"><?php echo $nbDestinations; ?></div>
+                            <div class="stat-label">Destinations</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value"><?php echo count($userClubs); ?></div>
+                            <div class="stat-label">Clubs</div>
+                        </div>
+                    </div>
+                    
+                    <?php if (!empty($userClubs)): ?>
+                        <div class="clubs-list">
+                            <div class="clubs-title">🏛️ Mes Clubs</div>
+                            <?php foreach ($userClubs as $club): ?>
+                                <div class="club-item">
+                                    <div class="club-item-icon">🏛️</div>
+                                    <div style="flex: 1;">
+                                        <div class="club-item-name"><?php echo h($club['nom']); ?></div>
+                                        <?php if ($club['ville']): ?>
+                                            <div class="club-item-city">📍 <?php echo h($club['ville']); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
-                
-                <form method="POST" action="" enctype="multipart/form-data" class="profile-form">
+            </div>
+            
+            <div>
+                <form method="POST" enctype="multipart/form-data">
                     <div class="form-section">
-                        <h3>Informations personnelles</h3>
+                        <h3>📝 Informations personnelles</h3>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="prenom">Prénom *</label>
-                                <input type="text" id="prenom" name="prenom" required 
-                                       value="<?php echo h($user['prenom']); ?>">
+                                <input type="text" id="prenom" name="prenom" required value="<?php echo h($user['prenom']); ?>">
                             </div>
                             
                             <div class="form-group">
                                 <label for="nom">Nom *</label>
-                                <input type="text" id="nom" name="nom" required 
-                                       value="<?php echo h($user['nom']); ?>">
+                                <input type="text" id="nom" name="nom" required value="<?php echo h($user['nom']); ?>">
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" required 
-                                   value="<?php echo h($user['email']); ?>">
+                            <input type="email" id="email" name="email" required value="<?php echo h($user['email']); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="telephone">Téléphone</label>
-                            <input type="tel" id="telephone" name="telephone" 
-                                   value="<?php echo h($user['telephone']); ?>">
+                            <input type="tel" id="telephone" name="telephone" value="<?php echo h($user['telephone']); ?>" placeholder="+33 6 12 34 56 78">
                         </div>
                         
                         <div class="form-group">
-                            <label for="photo">Changer la photo de profil</label>
-                            <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/gif,image/webp">
+                            <label for="photo">📸 Photo de profil</label>
+                            <input type="file" id="photo" name="photo" accept="image/*">
                             <small class="form-help">JPG, PNG, GIF ou WEBP - Max 5 Mo</small>
                         </div>
                     </div>
                     
                     <div class="form-section">
-                        <h3>Changer le mot de passe</h3>
-                        <p class="form-help">Laissez vide si vous ne souhaitez pas changer votre mot de passe</p>
+                        <h3>🔐 Changer le mot de passe</h3>
+                        <p class="form-help" style="margin-bottom: 1.5rem;">Laissez vide pour conserver votre mot de passe actuel</p>
                         
                         <div class="form-group">
                             <label for="current_password">Mot de passe actuel</label>
@@ -220,11 +558,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="form-group">
                                 <label for="new_password">Nouveau mot de passe</label>
                                 <input type="password" id="new_password" name="new_password" minlength="8">
-                                <small class="form-help">Au moins 8 caractères</small>
+                                <small class="form-help">Min. 8 caractères</small>
                             </div>
                             
                             <div class="form-group">
-                                <label for="new_password_confirm">Confirmer le nouveau mot de passe</label>
+                                <label for="new_password_confirm">Confirmer</label>
                                 <input type="password" id="new_password_confirm" name="new_password_confirm" minlength="8">
                             </div>
                         </div>
@@ -232,11 +570,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-actions">
                         <a href="../index.php" class="btn btn-secondary">Annuler</a>
-                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
                     </div>
                 </form>
             </div>
         </div>
-    </main>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
 </body>
 </html>

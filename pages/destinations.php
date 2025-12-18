@@ -95,7 +95,7 @@ unset($dest); // Détruire la référence
     <link rel="stylesheet" href="../assets/css/header.css">
     <style>
         body {
-            background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 100%);
+            background: url('../assets/images/hero-bg.jpg') center/cover no-repeat fixed;
             min-height: 100vh;
         }
         
