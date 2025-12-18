@@ -313,15 +313,11 @@ try {
         }
     </style>
 </head>
-<body>
+<body style="padding-top: 5rem;">
     <?php include '../includes/header.php'; ?>
 
-    <div class="hero-banner">
-        <h1 class="hero-title">👥 Annuaire des membres</h1>
-        <p class="hero-subtitle">Découvrez les pilotes de la communauté</p>
-    </div>
-
     <div class="container">
+        <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 2rem;">👥 Annuaire des membres</h1>
         <div class="search-card">
             <form method="GET" action="" class="search-form">
                 <input type="text" 
