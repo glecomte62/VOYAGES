@@ -78,7 +78,7 @@ if (!empty($clubs_lies)) {
     foreach ($clubs_lies as $club) {
         try {
             $stmtMembres = $pdo->prepare("
-                SELECT u.id, u.nom, u.prenom, u.ville, u.photo, u.telephone, u.email
+                SELECT u.id, u.nom, u.prenom, u.photo, u.telephone, u.email
                 FROM users u
                 INNER JOIN membres_clubs mc ON u.id = mc.user_id
                 WHERE mc.club_id = ? AND u.actif = 1
@@ -725,11 +725,6 @@ function displayAccess($destination) {
                                             <div style="color: #0c4a6e; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">
                                                 <?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>
                                             </div>
-                                            <?php if ($membre['ville']): ?>
-                                                <div style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.25rem;">
-                                                    📍 <?php echo h($membre['ville']); ?>
-                                                </div>
-                                            <?php endif; ?>
                                             <?php if ($membre['telephone']): ?>
                                                 <div style="color: #0ea5e9; font-size: 0.75rem;">
                                                     📞 <a href="tel:<?php echo h($membre['telephone']); ?>" style="color: inherit; text-decoration: none;"><?php echo h($membre['telephone']); ?></a>
