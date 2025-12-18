@@ -8,6 +8,9 @@
     right: 0;
     width: 100%;
     z-index: 999999;
+    isolation: isolate;
+    transform: translateZ(100px);
+    will-change: transform;
 }
 
 .page-navbar {
@@ -133,16 +136,17 @@
     padding: 0.5rem;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
+    transform: translateZ(200px) translateY(-10px);
     transition: all 0.3s ease;
     z-index: 999999 !important;
     pointer-events: none;
+    isolation: isolate;
 }
 
 .nav-dropdown.active .dropdown-menu {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateZ(200px) translateY(0);
     pointer-events: auto;
 }
 
