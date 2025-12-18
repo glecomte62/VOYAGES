@@ -201,7 +201,16 @@ $destinations_json = json_encode($destinations);
                 <div class="footer-section">
                     <h4>Club ULM Évasion</h4>
                     <p>Maubeuge</p>
-                 https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                    <p>Application développée pour la communauté ULM</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <?php echo date('Y'); ?> VOYAGES ULM - Tous droits réservés</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Données des destinations
         const destinations = <?php echo $destinations_json; ?>;
