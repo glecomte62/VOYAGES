@@ -101,6 +101,7 @@
 
 .nav-dropdown {
     position: relative;
+    z-index: 10001;
 }
 
 .dropdown-toggle {
@@ -131,7 +132,7 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s;
-    z-index: 9999;
+    z-index: 10002;
 }
 
 .nav-dropdown.active .dropdown-menu {
