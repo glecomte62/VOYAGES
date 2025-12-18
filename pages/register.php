@@ -86,22 +86,201 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - VOYAGES ULM</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/header.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .hero-banner {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #84cc16 50%, #10b981 100%);
+            padding: 3rem 2rem;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+            margin-top: -2rem;
+        }
+        
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.125rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .club-badge {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        
+        .club-badge img {
+            width: 80px;
+            height: auto;
+            margin: 0 auto 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .club-badge p {
+            margin: 0.25rem 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .club-badge h3 {
+            color: #0ea5e9;
+            font-size: 1.3rem;
+            margin: 0.5rem 0;
+            font-weight: 700;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+        
+        .form-help {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .btn-full {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.125rem;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-full:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+        }
+        
+        .auth-footer {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .auth-footer a {
+            color: #0ea5e9;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-box">
-            <div class="auth-logo">
-                <h1>✈️ VOYAGES ULM</h1>
-                <p class="tagline">Catalogue de destinations pour pilotes</p>
-            </div>
-            
+    <?php include '../includes/header.php'; ?>
+    
+    <div class="hero-banner">
+        <h1 class="hero-title">✈️ Rejoignez la communauté</h1>
+        <p class="hero-subtitle">Créez votre compte et commencez à partager vos aventures aériennes</p>
+    </div>
+    
+    <div class="container">
+        <div class="auth-card">
             <div class="club-badge">
-                <p>🏛️ Application offerte par le</p>
-                <h3>Club ULM Évasion</h3>
+                <img src="../assets/images/LOGO-LEGER.jpeg" alt="Logo Voyages ULM">
+                <p>Une initiative de</p>
                 <p class="location">Maubeuge</p>
             </div>
-            
-            <h2>Créer un compte</h2>
             
             <?php if ($error): ?>
                 <div class="error-message"><?php echo h($error); ?></div>
@@ -110,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($success): ?>
                 <div class="success-message">
                     <?php echo h($success); ?>
-                    <br><a href="login.php">Se connecter maintenant</a>
+                    <br><br><a href="login.php" class="btn-full" style="display: inline-block; text-decoration: none; padding: 0.875rem 2rem; width: auto;">Se connecter maintenant →</a>
                 </div>
             <?php else: ?>
                 <form method="POST" action="" enctype="multipart/form-data">
@@ -118,26 +297,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-group">
                             <label for="prenom">Prénom *</label>
                             <input type="text" id="prenom" name="prenom" required 
-                                   value="<?php echo h($_POST['prenom'] ?? ''); ?>">
+                                   value="<?php echo h($_POST['prenom'] ?? ''); ?>" placeholder="Votre prénom">
                         </div>
                         
                         <div class="form-group">
                             <label for="nom">Nom *</label>
                             <input type="text" id="nom" name="nom" required 
-                                   value="<?php echo h($_POST['nom'] ?? ''); ?>">
+                                   value="<?php echo h($_POST['nom'] ?? ''); ?>" placeholder="Votre nom">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="email">Email *</label>
                         <input type="email" id="email" name="email" required 
-                               value="<?php echo h($_POST['email'] ?? ''); ?>">
+                               value="<?php echo h($_POST['email'] ?? ''); ?>" placeholder="votre@email.com">
                     </div>
                     
                     <div class="form-group">
                         <label for="telephone">Téléphone</label>
                         <input type="tel" id="telephone" name="telephone" 
-                               value="<?php echo h($_POST['telephone'] ?? ''); ?>">
+                               value="<?php echo h($_POST['telephone'] ?? ''); ?>" placeholder="06 12 34 56 78">
                     </div>
                     
                     <div class="form-group">
@@ -148,24 +327,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group">
                         <label for="password">Mot de passe *</label>
-                        <input type="password" id="password" name="password" required minlength="8">
+                        <input type="password" id="password" name="password" required minlength="8" placeholder="Min. 8 caractères">
                         <small class="form-help">Au moins 8 caractères</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="password_confirm">Confirmer le mot de passe *</label>
-                        <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+                        <input type="password" id="password_confirm" name="password_confirm" required minlength="8" placeholder="Confirmer votre mot de passe">
                     </div>
                     
-                    <button type="submit" class="btn btn-primary btn-full">S'inscrire</button>
+                    <button type="submit" class="btn-full">Créer mon compte</button>
                 </form>
             <?php endif; ?>
             
             <div class="auth-footer">
-                <p class="auth-link">
+                <p>
                     Déjà inscrit ? <a href="login.php">Se connecter</a>
                 </p>
-                <p class="auth-home">
+                <p style="margin-top: 0.5rem;">
                     <a href="../index.php">← Retour à l'accueil</a>
                 </p>
             </div>
