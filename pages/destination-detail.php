@@ -38,6 +38,19 @@ if (!$destination) {
     exit;
 }
 
+// Vérifier si la destination est en favoris (si l'utilisateur est connecté)
+$isFavorite = false;
+if (isLoggedIn()) {
+    try {
+        $stmtFav = $pdo->prepare("SELECT COUNT(*) as count FROM favoris WHERE user_id = ? AND destination_id = ?");
+        $stmtFav->execute([$_SESSION['user_id'], $id]);
+        $favResult = $stmtFav->fetch();
+        $isFavorite = $favResult['count'] > 0;
+    } catch (PDOException $e) {
+        $isFavorite = false;
+    }
+}
+
 // Récupérer les photos de la galerie (si la table existe)
 $photos = [];
 try {
@@ -462,11 +475,21 @@ function displayAccess($destination) {
                 ⬅️ Retour aux destinations
             </a>
             
-            <?php if (isLoggedIn()): ?>
-                <a href="destination-edit.php?id=<?php echo $id; ?>" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; text-decoration: none; width: auto;">
-                    ✏️ Éditer cette destination
-                </a>
-            <?php endif; ?>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <?php if (isLoggedIn()): ?>
+                    <button id="btn-favoris" 
+                            data-destination-id="<?php echo $id; ?>"
+                            data-is-favorite="<?php echo $isFavorite ? '1' : '0'; ?>"
+                            class="btn-favoris <?php echo $isFavorite ? 'is-favorite' : ''; ?>"
+                            style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: 2px solid #fbbf24; background: <?php echo $isFavorite ? '#fbbf24' : 'white'; ?>; color: <?php echo $isFavorite ? 'white' : '#fbbf24'; ?>; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        <span class="favoris-icon"><?php echo $isFavorite ? '⭐' : '☆'; ?></span>
+                        <span class="favoris-text"><?php echo $isFavorite ? 'En favoris' : 'Ajouter aux favoris'; ?></span>
+                    </button>
+                    <a href="destination-edit.php?id=<?php echo $id; ?>" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; text-decoration: none; width: auto;">
+                        ✏️ Éditer cette destination
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
         
         <!-- Header avec titre et infos principales -->
@@ -890,6 +913,61 @@ function displayAccess($destination) {
                 document.getElementById('map').style.justifyContent = 'center';
             <?php endif; ?>
         });
+        
+        // Gestion du bouton favoris
+        const btnFavoris = document.getElementById('btn-favoris');
+        if (btnFavoris) {
+            btnFavoris.addEventListener('click', function() {
+                const destinationId = this.dataset.destinationId;
+                const isFavorite = this.dataset.isFavorite === '1';
+                const action = isFavorite ? 'remove' : 'add';
+                
+                // Désactiver le bouton pendant la requête
+                btnFavoris.disabled = true;
+                btnFavoris.style.opacity = '0.6';
+                
+                fetch('destination-favoris-ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=${action}&destination_id=${destinationId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Inverser l'état
+                        const newIsFavorite = !isFavorite;
+                        btnFavoris.dataset.isFavorite = newIsFavorite ? '1' : '0';
+                        
+                        // Mettre à jour l'apparence
+                        if (newIsFavorite) {
+                            btnFavoris.classList.add('is-favorite');
+                            btnFavoris.style.background = '#fbbf24';
+                            btnFavoris.style.color = 'white';
+                            btnFavoris.querySelector('.favoris-icon').textContent = '⭐';
+                            btnFavoris.querySelector('.favoris-text').textContent = 'En favoris';
+                        } else {
+                            btnFavoris.classList.remove('is-favorite');
+                            btnFavoris.style.background = 'white';
+                            btnFavoris.style.color = '#fbbf24';
+                            btnFavoris.querySelector('.favoris-icon').textContent = '☆';
+                            btnFavoris.querySelector('.favoris-text').textContent = 'Ajouter aux favoris';
+                        }
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Impossible de modifier les favoris'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur réseau lors de la modification des favoris');
+                })
+                .finally(() => {
+                    btnFavoris.disabled = false;
+                    btnFavoris.style.opacity = '1';
+                });
+            });
+        }
     </script>
 </body>
 </html>
