@@ -35,15 +35,21 @@ try {
         $membres[$key]['clubs'] = [];
         try {
             $stmtClubs = $pdo->prepare("
-                SELECT c.nom, c.ville 
+                SELECT c.id, c.nom, c.ville 
                 FROM clubs c
                 INNER JOIN membres_clubs mc ON c.id = mc.club_id
                 WHERE mc.user_id = ?
+                ORDER BY c.nom ASC
             ");
             $stmtClubs->execute([$membre['id']]);
-            $membres[$key]['clubs'] = $stmtClubs->fetchAll(PDO::FETCH_ASSOC);
+            $clubs = $stmtClubs->fetchAll(PDO::FETCH_ASSOC);
+            $membres[$key]['clubs'] = $clubs;
+            
+            // Debug temporaire - à supprimer après vérification
+            // error_log("Membre {$membre['nom']}: " . count($clubs) . " clubs trouvés");
         } catch (PDOException $e) {
             // Table membres_clubs n'existe pas ou erreur - continuer avec tableau vide
+            error_log("Erreur récupération clubs pour membre {$membre['id']}: " . $e->getMessage());
         }
     }
 } catch (Exception $e) {
