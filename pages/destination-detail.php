@@ -451,11 +451,15 @@ function displayAccess($destination) {
         }
         
         .lightbox img {
-            width: 90vw;
-            height: 90vh;
+            max-width: 90vw;
+            max-height: 90vh;
+            width: auto;
+            height: auto;
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
         
         .lightbox-caption {
@@ -867,10 +871,8 @@ function displayAccess($destination) {
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
         <div class="lightbox-counter" id="lightbox-counter"></div>
-        <?php if (count($photos) > 1): ?>
-            <button class="lightbox-nav prev" onclick="event.stopPropagation(); prevPhoto()">‹</button>
-            <button class="lightbox-nav next" onclick="event.stopPropagation(); nextPhoto()">›</button>
-        <?php endif; ?>
+        <button class="lightbox-nav prev" onclick="event.stopPropagation(); prevPhoto()">‹</button>
+        <button class="lightbox-nav next" onclick="event.stopPropagation(); nextPhoto()">›</button>
         <div class="lightbox-content" onclick="event.stopPropagation()">
             <img id="lightbox-img" src="" alt="Photo agrandie">
             <div id="lightbox-caption" class="lightbox-caption"></div>
@@ -903,8 +905,18 @@ function displayAccess($destination) {
             document.getElementById('lightbox-caption').textContent = photo.legende || '';
             document.getElementById('lightbox-caption').style.display = photo.legende ? 'block' : 'none';
             
+            // Afficher/masquer les boutons de navigation selon le nombre de photos
+            const prevBtn = document.querySelector('.lightbox-nav.prev');
+            const nextBtn = document.querySelector('.lightbox-nav.next');
             if (galleryPhotos.length > 1) {
+                if (prevBtn) prevBtn.style.display = 'flex';
+                if (nextBtn) nextBtn.style.display = 'flex';
                 document.getElementById('lightbox-counter').textContent = `${index + 1} / ${galleryPhotos.length}`;
+                document.getElementById('lightbox-counter').style.display = 'block';
+            } else {
+                if (prevBtn) prevBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'none';
+                document.getElementById('lightbox-counter').style.display = 'none';
             }
         }
         
