@@ -36,7 +36,7 @@ if (!$destination) {
 $photos = [];
 try {
     $stmtPhotos = $pdo->prepare("
-        SELECT id, filename, legende 
+        SELECT id, chemin_fichier as filename, legende 
         FROM destination_photos 
         WHERE destination_id = ? 
         ORDER BY ordre ASC, created_at ASC

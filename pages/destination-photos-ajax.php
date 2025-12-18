@@ -94,13 +94,13 @@ if ($action === 'upload' && $destination_id) {
     if ($photo_id) {
         try {
             // Récupérer le nom du fichier
-            $stmt = $pdo->prepare("SELECT filename FROM destination_photos WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT chemin_fichier FROM destination_photos WHERE id = ?");
             $stmt->execute([$photo_id]);
             $photo = $stmt->fetch();
             
             if ($photo) {
                 // Supprimer le fichier
-                $filepath = '../uploads/destinations/' . $photo['filename'];
+                $filepath = '../uploads/destinations/' . $photo['chemin_fichier'];
                 if (file_exists($filepath)) {
                     unlink($filepath);
                 }
