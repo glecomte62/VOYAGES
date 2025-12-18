@@ -79,14 +79,14 @@ if (!empty($clubs_lies)) {
             $stmtMembres = $pdo->prepare("
                 SELECT u.id, u.nom, u.prenom, u.ville, u.photo, u.telephone, u.email
                 FROM users u
-                INNER JOIN user_clubs uc ON u.id = uc.user_id
-                WHERE uc.club_id = ? AND u.actif = 1
+                INNER JOIN membres_clubs mc ON u.id = mc.user_id
+                WHERE mc.club_id = ? AND u.actif = 1
                 ORDER BY u.nom ASC, u.prenom ASC
             ");
             $stmtMembres->execute([$club['id']]);
             $clubs_membres[$club['id']] = $stmtMembres->fetchAll();
         } catch (PDOException $e) {
-            // Table user_clubs n'existe pas encore - initialiser avec tableau vide
+            // Table membres_clubs n'existe pas encore - initialiser avec tableau vide
             $clubs_membres[$club['id']] = [];
         }
     }
