@@ -35,11 +35,6 @@ $clubs = $stmt->fetchAll();
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <style>
-        body {
-            background: url('../assets/images/hero-bg.jpg') center/cover no-repeat fixed;
-            min-height: 100vh;
-        }
-        
         .container {
             max-width: 1200px;
             margin: 2rem auto;

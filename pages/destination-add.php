@@ -151,11 +151,6 @@ if (isset($_GET['reset'])) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body {
-            background: url('../assets/images/hero-bg.jpg') center/cover no-repeat fixed;
-            min-height: 100vh;
-        }
-        
         .container {
             max-width: 1200px;
             margin: 0 auto;
