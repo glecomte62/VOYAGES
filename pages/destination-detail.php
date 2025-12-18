@@ -448,28 +448,30 @@ function displayAccess($destination) {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
         }
         
         .lightbox img {
-            max-width: 95vw;
-            max-height: 85vh;
+            max-width: 98vw;
+            max-height: 92vh;
             width: auto;
             height: auto;
             object-fit: contain;
-            border-radius: 8px;
+            border-radius: 4px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
         
         .lightbox-caption {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
             color: white;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 1rem 2rem;
-            margin-top: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
             text-align: center;
-            max-width: 800px;
-            font-size: 1.1rem;
+            max-width: 90%;
+            font-size: 1rem;
         }
         
         .lightbox-close {
