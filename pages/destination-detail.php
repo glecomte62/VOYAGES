@@ -433,28 +433,106 @@ function displayAccess($destination) {
             z-index: 9999;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
         }
         
         .lightbox.active {
             display: flex;
         }
         
+        .lightbox-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
         .lightbox img {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 100%;
+            max-height: 80vh;
             object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .lightbox-caption {
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1rem 2rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 800px;
+            font-size: 1.1rem;
         }
         
         .lightbox-close {
             position: absolute;
-            top: 2rem;
-            right: 2rem;
+            top: 1rem;
+            right: 1rem;
             color: white;
             font-size: 3rem;
             cursor: pointer;
-            background: none;
+            background: rgba(0, 0, 0, 0.5);
             border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             line-height: 1;
+            transition: all 0.3s;
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .lightbox-nav.prev {
+            left: 2rem;
+        }
+        
+        .lightbox-nav.next {
+            right: 2rem;
+        }
+        
+        .lightbox-counter {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -623,14 +701,14 @@ function displayAccess($destination) {
         <!-- Galerie photos supplémentaires -->
         <?php if (!empty($photos)): ?>
         <div class="content-card full-width-card">
-            <h2>📷 Galerie photos</h2>
+            <h2>📷 Galerie photos (<?php echo count($photos); ?>)</h2>
             <div class="photo-gallery">
-                <?php foreach ($photos as $photo): ?>
-                    <div class="gallery-item" onclick="openLightbox('/uploads/destinations/<?php echo h($photo['filename']); ?>')">
-                        <img src="/uploads/destinations/<?php echo h($photo['filename']); ?>" 
+                <?php foreach ($photos as $index => $photo): ?>
+                    <div class="gallery-item" onclick="openLightbox(<?php echo $index; ?>)" style="cursor: pointer;">
+                        <img src="../uploads/destinations/<?php echo h($photo['filename']); ?>" 
                              alt="<?php echo h($photo['legende'] ?? ''); ?>">
                         <?php if ($photo['legende']): ?>
-                            <div style="text-align: center; padding: 0.5rem; font-size: 0.875rem; color: #64748b;">
+                            <div class="legende">
                                 <?php echo h($photo['legende']); ?>
                             </div>
                         <?php endif; ?>
@@ -784,15 +862,56 @@ function displayAccess($destination) {
     <!-- Lightbox pour agrandir les photos -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-        <img id="lightbox-img" src="" alt="Photo agrandie">
+        <div class="lightbox-counter" id="lightbox-counter"></div>
+        <?php if (count($photos) > 1): ?>
+            <button class="lightbox-nav prev" onclick="event.stopPropagation(); prevPhoto()">‹</button>
+            <button class="lightbox-nav next" onclick="event.stopPropagation(); nextPhoto()">›</button>
+        <?php endif; ?>
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" alt="Photo agrandie">
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
     </div>
     
     <script>
-        function openLightbox(src) {
+        const galleryPhotos = <?php echo json_encode(array_map(function($p) {
+            return [
+                'src' => '../uploads/destinations/' . $p['filename'],
+                'legende' => $p['legende'] ?? ''
+            ];
+        }, $photos)); ?>;
+        
+        let currentPhotoIndex = 0;
+        
+        function openLightbox(index) {
             event.stopPropagation();
+            currentPhotoIndex = index;
+            showPhoto(index);
             document.getElementById('lightbox').classList.add('active');
-            document.getElementById('lightbox-img').src = src;
             document.body.style.overflow = 'hidden';
+        }
+        
+        function showPhoto(index) {
+            if (galleryPhotos.length === 0) return;
+            
+            const photo = galleryPhotos[index];
+            document.getElementById('lightbox-img').src = photo.src;
+            document.getElementById('lightbox-caption').textContent = photo.legende || '';
+            document.getElementById('lightbox-caption').style.display = photo.legende ? 'block' : 'none';
+            
+            if (galleryPhotos.length > 1) {
+                document.getElementById('lightbox-counter').textContent = `${index + 1} / ${galleryPhotos.length}`;
+            }
+        }
+        
+        function nextPhoto() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % galleryPhotos.length;
+            showPhoto(currentPhotoIndex);
+        }
+        
+        function prevPhoto() {
+            currentPhotoIndex = (currentPhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length;
+            showPhoto(currentPhotoIndex);
         }
         
         function closeLightbox() {
@@ -800,9 +919,13 @@ function displayAccess($destination) {
             document.body.style.overflow = 'auto';
         }
         
-        // Fermer avec Echap
+        // Fermer avec Echap et naviguer avec flèches
         document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('lightbox').classList.contains('active')) return;
+            
             if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowRight') nextPhoto();
+            else if (e.key === 'ArrowLeft') prevPhoto();
         });
         
         // Carte Leaflet
