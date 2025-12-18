@@ -972,10 +972,22 @@ function displayAccess($destination) {
                                                 <?php endif; ?>
                                             </div>
                                         </div>
-                                        <div style="display: flex; gap: 0.25rem;">
-                                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                                <span style="color: <?php echo $i <= $av['note'] ? '#fbbf24' : '#e5e7eb'; ?>; font-size: 1.25rem;">★</span>
-                                            <?php endfor; ?>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="display: flex; gap: 0.25rem;">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <span style="color: <?php echo $i <= $av['note'] ? '#fbbf24' : '#e5e7eb'; ?>; font-size: 1.25rem;">★</span>
+                                                <?php endfor; ?>
+                                            </div>
+                                            <?php if (isLoggedIn() && ($av['user_id'] == $_SESSION['user_id'] || isAdmin())): ?>
+                                                <button class="btn-delete-avis" 
+                                                        data-avis-id="<?php echo $av['id']; ?>"
+                                                        style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; cursor: pointer; font-weight: 600; transition: all 0.3s;"
+                                                        onmouseover="this.style.background='#dc2626'"
+                                                        onmouseout="this.style.background='#ef4444'"
+                                                        title="Supprimer cet avis">
+                                                    🗑️ Supprimer
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <?php if ($av['titre']): ?>
@@ -1190,6 +1202,57 @@ function displayAccess($destination) {
                 });
             });
         }
+        
+        // Gestion de la suppression d'avis
+        document.querySelectorAll('.btn-delete-avis').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!confirm('Êtes-vous sûr de vouloir supprimer cet avis ?')) {
+                    return;
+                }
+                
+                const avisId = this.dataset.avisId;
+                const avisItem = this.closest('.avis-item');
+                
+                // Désactiver le bouton
+                this.disabled = true;
+                this.textContent = '⏳ Suppression...';
+                
+                fetch('destination-avis-ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=delete&avis_id=${avisId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Animer la suppression
+                        avisItem.style.transition = 'all 0.3s';
+                        avisItem.style.opacity = '0';
+                        avisItem.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            avisItem.remove();
+                            // Si plus d'avis, afficher le message vide
+                            const avisContainer = document.getElementById('avis-container');
+                            if (avisContainer.querySelectorAll('.avis-item').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Impossible de supprimer l\'avis'));
+                        this.disabled = false;
+                        this.textContent = '🗑️ Supprimer';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur réseau lors de la suppression');
+                    this.disabled = false;
+                    this.textContent = '🗑️ Supprimer';
+                });
+            });
+        });
     </script>
 </body>
 </html>

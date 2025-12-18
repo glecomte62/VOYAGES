@@ -21,6 +21,49 @@ try {
     exit;
 }
 
+$action = $_POST['action'] ?? 'add';
+$user_id = $_SESSION['user_id'];
+
+// Gestion de la suppression d'avis
+if ($action === 'delete') {
+    $avis_id = $_POST['avis_id'] ?? null;
+    
+    if (!$avis_id) {
+        echo json_encode(['success' => false, 'error' => 'ID avis manquant']);
+        exit;
+    }
+    
+    try {
+        // Vérifier que l'avis existe et que l'utilisateur a le droit de le supprimer
+        $stmtCheck = $pdo->prepare("SELECT user_id FROM avis_destinations WHERE id = ?");
+        $stmtCheck->execute([$avis_id]);
+        $avis = $stmtCheck->fetch();
+        
+        if (!$avis) {
+            echo json_encode(['success' => false, 'error' => 'Avis introuvable']);
+            exit;
+        }
+        
+        // Vérifier les permissions : propriétaire ou admin
+        if ($avis['user_id'] != $user_id && !isAdmin()) {
+            echo json_encode(['success' => false, 'error' => 'Non autorisé à supprimer cet avis']);
+            exit;
+        }
+        
+        // Supprimer l'avis
+        $stmtDelete = $pdo->prepare("DELETE FROM avis_destinations WHERE id = ?");
+        $stmtDelete->execute([$avis_id]);
+        
+        echo json_encode(['success' => true, 'message' => 'Avis supprimé avec succès']);
+        exit;
+        
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'error' => 'Erreur base de données : ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+// Gestion de l'ajout/modification d'avis
 $destination_id = $_POST['destination_id'] ?? null;
 $note = $_POST['note'] ?? null;
 $titre = trim($_POST['titre'] ?? '');
