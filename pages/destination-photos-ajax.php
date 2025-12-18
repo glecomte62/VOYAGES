@@ -55,11 +55,11 @@ if ($action === 'upload' && $destination_id) {
                         
                         // Insérer en base
                         $stmt = $pdo->prepare("
-                            INSERT INTO destination_photos (destination_id, chemin_fichier, legende, ordre)
-                            VALUES (?, ?, ?, ?)
+                            INSERT INTO destination_photos (destination_id, user_id, chemin_fichier, legende, ordre)
+                            VALUES (?, ?, ?, ?, ?)
                         ");
                         $ordre = $i;
-                        $stmt->execute([$destination_id, $result['filename'], $legende, $ordre]);
+                        $stmt->execute([$destination_id, $_SESSION['user_id'], $result['filename'], $legende, $ordre]);
                         
                         $uploaded[] = [
                             'id' => $pdo->lastInsertId(),
