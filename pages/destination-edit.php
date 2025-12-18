@@ -279,6 +279,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             resize: vertical;
         }
         
+        .form-group-full textarea#description {
+            max-width: 100%;
+            width: 100%;
+        }
+        
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
