@@ -120,9 +120,9 @@
     top: 100%;
     left: 0;
     min-width: 200px;
-    background: #2d3748;
+    background: white;
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     margin-top: 0.5rem;
     padding: 0.5rem;
     opacity: 0;
@@ -140,7 +140,7 @@
 .dropdown-menu a {
     display: block;
     padding: 0.75rem 1rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
     text-decoration: none;
     border-radius: 6px;
     font-size: 0.9rem;
@@ -148,8 +148,8 @@
 }
 
 .dropdown-menu a:hover {
-    background: rgba(132, 204, 22, 0.3);
-    color: white;
+    background: linear-gradient(135deg, #fef3c7 0%, #d9f99d 100%);
+    color: #065f46;
 }
 
 .dropdown-divider {
