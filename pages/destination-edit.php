@@ -863,13 +863,13 @@ Exemples de mise en forme :
         </div>
         
         <!-- Clubs associés au terrain -->
-        <div class="form-card">
+        <div class="form-card" id="clubs-section">
             <h2>🏛️ Clubs associés à ce terrain</h2>
             <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">
                 Sélectionnez les clubs qui utilisent régulièrement ce terrain. Les membres de ces clubs seront visibles sur la fiche de la destination.
             </p>
             
-            <form method="POST" action="">
+            <form method="POST" action="#clubs-section">
                 <?php if (!empty($allClubs)): ?>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
                         <?php foreach ($allClubs as $club): ?>

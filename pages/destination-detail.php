@@ -442,16 +442,20 @@ function displayAccess($destination) {
         
         .lightbox-content {
             position: relative;
-            max-width: 95%;
-            max-height: 90vh;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            padding: 2rem;
         }
         
         .lightbox img {
-            max-width: 100%;
-            max-height: 80vh;
+            max-width: 95vw;
+            max-height: 85vh;
+            width: auto;
+            height: auto;
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
