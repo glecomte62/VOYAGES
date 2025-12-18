@@ -105,6 +105,31 @@ if (!empty($clubs_lies)) {
     }
 }
 
+// Récupérer les avis de cette destination
+$avis = [];
+$note_moyenne = 0;
+$total_avis = 0;
+try {
+    $stmtAvis = $pdo->prepare("
+        SELECT a.*, u.nom, u.prenom, u.photo
+        FROM avis_destinations a
+        INNER JOIN users u ON a.user_id = u.id
+        WHERE a.destination_id = ?
+        ORDER BY a.created_at DESC
+    ");
+    $stmtAvis->execute([$id]);
+    $avis = $stmtAvis->fetchAll();
+    
+    // Calculer la note moyenne
+    if (!empty($avis)) {
+        $total_avis = count($avis);
+        $somme_notes = array_sum(array_column($avis, 'note'));
+        $note_moyenne = round($somme_notes / $total_avis, 1);
+    }
+} catch (PDOException $e) {
+    $avis = [];
+}
+
 // Fonction pour afficher les services
 function displayServices($destination) {
     $services = [];
@@ -464,6 +489,31 @@ function displayAccess($destination) {
             background: rgb(220, 38, 38);
             transform: scale(1.1);
         }
+        
+        /* Système de notation par étoiles */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 0.25rem;
+            font-size: 2rem;
+        }
+        
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+        
+        .star-rating label {
+            cursor: pointer;
+            color: #e5e7eb;
+            transition: color 0.2s;
+        }
+        
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #fbbf24;
+        }
     </style>
 </head>
 <body>
@@ -808,6 +858,141 @@ function displayAccess($destination) {
             le <?php echo date('d/m/Y', strtotime($destination['created_at'])); ?>
         </div>
         <?php endif; ?>
+        
+        <!-- Section Avis et Commentaires -->
+        <div class="content-card full-width-card" style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>⭐ Avis et commentaires</h2>
+                <?php if ($total_avis > 0): ?>
+                    <div style="text-align: right;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #fbbf24;">
+                            <?php echo $note_moyenne; ?>/5
+                        </div>
+                        <div style="color: #64748b; font-size: 0.875rem;">
+                            <?php echo $total_avis; ?> avis
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <?php if (isLoggedIn()): ?>
+                <!-- Formulaire d'ajout d'avis -->
+                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 2px solid #bae6fd;">
+                    <h3 style="color: #0c4a6e; margin-top: 0; margin-bottom: 1rem;">✍️ Laisser un avis</h3>
+                    <form id="form-avis">
+                        <input type="hidden" name="destination_id" value="<?php echo $id; ?>">
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                Note <span style="color: #ef4444;">*</span>
+                            </label>
+                            <div class="star-rating">
+                                <input type="radio" name="note" value="5" id="star5" required>
+                                <label for="star5" title="5 étoiles">★</label>
+                                <input type="radio" name="note" value="4" id="star4">
+                                <label for="star4" title="4 étoiles">★</label>
+                                <input type="radio" name="note" value="3" id="star3">
+                                <label for="star3" title="3 étoiles">★</label>
+                                <input type="radio" name="note" value="2" id="star2">
+                                <label for="star2" title="2 étoiles">★</label>
+                                <input type="radio" name="note" value="1" id="star1">
+                                <label for="star1" title="1 étoile">★</label>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                Titre de l'avis
+                            </label>
+                            <input type="text" name="titre" maxlength="200"
+                                   placeholder="Ex: Belle destination, très bien accueilli"
+                                   style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                Votre commentaire <span style="color: #ef4444;">*</span>
+                            </label>
+                            <textarea name="commentaire" required rows="5"
+                                      placeholder="Partagez votre expérience sur cette destination..."
+                                      style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;"></textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                Date de visite
+                            </label>
+                            <input type="date" name="date_visite"
+                                   style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                            ✅ Publier mon avis
+                        </button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <div style="background: #fef3c7; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; color: #92400e;">
+                        <a href="login.php" style="color: #92400e; font-weight: 600; text-decoration: underline;">Connectez-vous</a> pour laisser un avis sur cette destination.
+                    </p>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Liste des avis -->
+            <div id="avis-container">
+                <?php if (empty($avis)): ?>
+                    <div style="text-align: center; padding: 3rem; background: #f8fafc; border-radius: 12px; color: #94a3b8;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💭</div>
+                        <p style="margin: 0;">Aucun avis pour le moment. Soyez le premier à partager votre expérience !</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($avis as $av): ?>
+                        <div class="avis-item" style="padding: 1.5rem; background: white; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #f1f5f9;">
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <?php if ($av['photo']): ?>
+                                    <img src="../uploads/photos/<?php echo h($av['photo']); ?>" 
+                                         alt="<?php echo h($av['prenom'] . ' ' . $av['nom']); ?>"
+                                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #84cc16 100%); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 700;">
+                                        <?php echo strtoupper(substr($av['prenom'], 0, 1) . substr($av['nom'], 0, 1)); ?>
+                                    </div>
+                                <?php endif; ?>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <div style="font-weight: 700; color: #0c4a6e;">
+                                                <?php echo h($av['prenom'] . ' ' . $av['nom']); ?>
+                                            </div>
+                                            <div style="color: #64748b; font-size: 0.875rem;">
+                                                <?php echo date('d/m/Y', strtotime($av['created_at'])); ?>
+                                                <?php if ($av['date_visite']): ?>
+                                                    • Visite le <?php echo date('d/m/Y', strtotime($av['date_visite'])); ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 0.25rem;">
+                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                <span style="color: <?php echo $i <= $av['note'] ? '#fbbf24' : '#e5e7eb'; ?>; font-size: 1.25rem;">★</span>
+                                            <?php endfor; ?>
+                                        </div>
+                                    </div>
+                                    <?php if ($av['titre']): ?>
+                                        <h4 style="margin: 0.75rem 0 0.5rem 0; color: #1e293b;">
+                                            <?php echo h($av['titre']); ?>
+                                        </h4>
+                                    <?php endif; ?>
+                                    <p style="margin: 0.5rem 0 0 0; color: #475569; line-height: 1.6;">
+                                        <?php echo nl2br(h($av['commentaire'])); ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
@@ -965,6 +1150,43 @@ function displayAccess($destination) {
                 .finally(() => {
                     btnFavoris.disabled = false;
                     btnFavoris.style.opacity = '1';
+                });
+            });
+        }
+        
+        // Gestion du formulaire d'avis
+        const formAvis = document.getElementById('form-avis');
+        if (formAvis) {
+            formAvis.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(formAvis);
+                const submitBtn = formAvis.querySelector('button[type="submit"]');
+                
+                // Désactiver le bouton pendant l'envoi
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Envoi en cours...';
+                
+                fetch('destination-avis-ajax.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recharger la page pour afficher le nouvel avis
+                        location.reload();
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Impossible d\'enregistrer l\'avis'));
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '✅ Publier mon avis';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur réseau lors de l\'envoi de l\'avis');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '✅ Publier mon avis';
                 });
             });
         }
