@@ -458,50 +458,91 @@ function displayAccess($destination) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 9999;
-            align-items: center;
-            justify-content: center;
+        }
+        
+        .lightbox.active {
+            display: block;
+        }
+        
+        .lightbox-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
             flex-direction: column;
             padding: 2rem;
         }
         
-        .lightbox.active {
+        .lightbox-header {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
         }
         
         .lightbox-content {
-            position: relative;
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            max-width: 95vw;
-            max-height: 95vh;
+            flex: 1;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
+            margin-bottom: 1rem;
         }
         
         .lightbox img {
-            max-width: calc(95vw - 3rem);
-            max-height: calc(90vh - 3rem);
-            width: auto;
-            height: auto;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
-            border-radius: 4px;
+            box-shadow: 0 10px 60px rgba(0, 0, 0, 0.8);
+        }
+        
+        .lightbox-thumbnails {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            overflow-x: auto;
+            padding: 1rem 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+        
+        .lightbox-thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            flex-shrink: 0;
+        }
+        
+        .lightbox-thumbnail:hover {
+            opacity: 0.8;
+        }
+        
+        .lightbox-thumbnail.active {
+            opacity: 1;
+            border-color: #fbbf24;
+            transform: scale(1.1);
+        }
+        
+        .lightbox-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
         }
         
         .lightbox-caption {
-            margin-top: 1rem;
-            color: #1f2937;
-            background: #f3f4f6;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
             text-align: center;
-            max-width: 100%;
-            font-size: 1rem;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 1.1rem;
         }
         
         .lightbox-close {
@@ -905,18 +946,28 @@ function displayAccess($destination) {
     
     <!-- Lightbox pour agrandir les photos -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-        <div class="lightbox-counter" id="lightbox-counter"></div>
-        <button class="lightbox-nav prev" onclick="event.stopPropagation(); prevPhoto()">‹</button>
-        <button class="lightbox-nav next" onclick="event.stopPropagation(); nextPhoto()">›</button>
-        <div class="lightbox-content" onclick="event.stopPropagation()">
-            <img id="lightbox-img" src="" alt="Photo agrandie">
+        <div class="lightbox-wrapper" onclick="event.stopPropagation()">
+            <div class="lightbox-header">
+                <div class="lightbox-counter" id="lightbox-counter" style="color: white; font-size: 1.2rem; font-weight: 600;"></div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="lightbox-nav prev" onclick="prevPhoto()" style="position: static; transform: none;">‹</button>
+                    <button class="lightbox-nav next" onclick="nextPhoto()" style="position: static; transform: none;">›</button>
+                    <button class="lightbox-close" onclick="closeLightbox()" style="position: static;">&times;</button>
+                </div>
+            </div>
+            
+            <div class="lightbox-content">
+                <img id="lightbox-img" src="" alt="Photo agrandie">
+            </div>
+            
             <div id="lightbox-caption" class="lightbox-caption"></div>
+            
+            <div class="lightbox-thumbnails" id="lightbox-thumbnails"></div>
         </div>
     </div>
     
     <script>
-        // Version 2024-12-18 17:00
+        // Version 2024-12-18 18:00 - Galerie avec vignettes
         const galleryPhotos = <?php echo json_encode(array_map(function($p) {
             return [
                 'src' => '../uploads/destinations/' . $p['filename'],
@@ -929,9 +980,47 @@ function displayAccess($destination) {
         function openLightbox(index) {
             if (typeof index !== 'number') return;
             currentPhotoIndex = index;
+            buildThumbnails();
             showPhoto(index);
             document.getElementById('lightbox').classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+        
+        function buildThumbnails() {
+            const container = document.getElementById('lightbox-thumbnails');
+            container.innerHTML = '';
+            
+            galleryPhotos.forEach((photo, index) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'lightbox-thumbnail';
+                if (index === currentPhotoIndex) {
+                    thumb.classList.add('active');
+                }
+                
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.legende || '';
+                
+                thumb.appendChild(img);
+                thumb.onclick = () => {
+                    currentPhotoIndex = index;
+                    showPhoto(index);
+                    updateThumbnails();
+                };
+                
+                container.appendChild(thumb);
+            });
+        }
+        
+        function updateThumbnails() {
+            const thumbs = document.querySelectorAll('.lightbox-thumbnail');
+            thumbs.forEach((thumb, index) => {
+                if (index === currentPhotoIndex) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
         }
         
         function showPhoto(index) {
@@ -941,23 +1030,13 @@ function displayAccess($destination) {
             const img = document.getElementById('lightbox-img');
             const caption = document.getElementById('lightbox-caption');
             const counter = document.getElementById('lightbox-counter');
-            const prevBtn = document.querySelector('.lightbox-nav.prev');
-            const nextBtn = document.querySelector('.lightbox-nav.next');
             
             img.src = photo.src;
             caption.textContent = photo.legende || '';
             caption.style.display = photo.legende ? 'block' : 'none';
+            counter.textContent = `${index + 1} / ${galleryPhotos.length}`;
             
-            if (galleryPhotos.length > 1) {
-                if (prevBtn) prevBtn.style.display = 'flex';
-                if (nextBtn) nextBtn.style.display = 'flex';
-                counter.textContent = `${index + 1} / ${galleryPhotos.length}`;
-                counter.style.display = 'block';
-            } else {
-                if (prevBtn) prevBtn.style.display = 'none';
-                if (nextBtn) nextBtn.style.display = 'none';
-                counter.style.display = 'none';
-            }
+            updateThumbnails();
         }
         
         function nextPhoto() {
