@@ -695,31 +695,53 @@ function displayAccess($destination) {
                             <div style="color: #64748b; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; text-transform: uppercase;">
                                 👥 Membres pilotes sur ce terrain (<?php echo count($clubs_membres[$club['id']]); ?>)
                             </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                                <?php foreach ($clubs_membres[$club['id']] as $membre): ?>
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border: 2px solid #bae6fd; transition: all 0.3s;">
-                                        <?php if ($membre['photo']): ?>
-                                            <img src="../uploads/users/<?php echo h($membre['photo']); ?>" 
-                                                 alt="<?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>"
-                                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0ea5e9;">
-                                        <?php else: ?>
-                                            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #84cc16 100%); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white; font-weight: 700; border: 2px solid #84cc16;">
-                                                <?php echo strtoupper(substr($membre['prenom'], 0, 1) . substr($membre['nom'], 0, 1)); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div style="flex: 1; min-width: 0;">
-                                            <div style="color: #0c4a6e; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">
-                                                <?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>
-                                            </div>
-                                            <?php if ($membre['telephone']): ?>
-                                                <div style="color: #0ea5e9; font-size: 0.75rem;">
-                                                    📞 <a href="tel:<?php echo h($membre['telephone']); ?>" style="color: inherit; text-decoration: none;"><?php echo h($membre['telephone']); ?></a>
+                            
+                            <?php if (isLoggedIn()): ?>
+                                <!-- Affichage complet pour les membres connectés -->
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                                    <?php foreach ($clubs_membres[$club['id']] as $membre): ?>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border: 2px solid #bae6fd; transition: all 0.3s;">
+                                            <?php if ($membre['photo']): ?>
+                                                <img src="../uploads/users/<?php echo h($membre['photo']); ?>" 
+                                                     alt="<?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>"
+                                                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0ea5e9;">
+                                            <?php else: ?>
+                                                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #84cc16 100%); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white; font-weight: 700; border: 2px solid #84cc16;">
+                                                    <?php echo strtoupper(substr($membre['prenom'], 0, 1) . substr($membre['nom'], 0, 1)); ?>
                                                 </div>
                                             <?php endif; ?>
+                                            <div style="flex: 1; min-width: 0;">
+                                                <div style="color: #0c4a6e; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">
+                                                    <?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>
+                                                </div>
+                                                <?php if ($membre['telephone']): ?>
+                                                    <div style="color: #0ea5e9; font-size: 0.75rem;">
+                                                        📞 <a href="tel:<?php echo h($membre['telephone']); ?>" style="color: inherit; text-decoration: none;"><?php echo h($membre['telephone']); ?></a>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <!-- Message pour les visiteurs non connectés -->
+                                <div style="background: linear-gradient(135deg, #fef3c7 0%, #d9f99d 100%); border-left: 4px solid #84cc16; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                                    <div style="color: #065f46; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">
+                                        🔒 Informations réservées aux membres
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
+                                    <div style="color: #475569; font-size: 0.9rem; margin-bottom: 1rem;">
+                                        Pour consulter les photos et coordonnées des pilotes membres de ce club, veuillez vous connecter à votre compte.
+                                    </div>
+                                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                        <a href="login.php" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                                            Se connecter
+                                        </a>
+                                        <a href="register.php" style="background: linear-gradient(135deg, #fbbf24 0%, #84cc16 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                                            Créer un compte
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 </div>
