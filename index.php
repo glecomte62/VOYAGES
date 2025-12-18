@@ -56,9 +56,8 @@ $nb_clubs = $stats['total'] ?? 0;
                 <?php endif; ?>
             </div>
             <div class="hero-badge">
-                <img src="assets/images/LOGO-LEGER.jpeg" alt="Logo Voyages ULM" class="badge-logo">
                 <p>Une initiative de</p>
-                <h3>Club ULM Évasion</h3>
+                <img src="assets/images/LOGO-LEGER.jpeg" alt="Logo Voyages ULM" class="badge-logo">
                 <p class="badge-location">Maubeuge</p>
             </div>
         </section>
