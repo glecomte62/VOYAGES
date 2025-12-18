@@ -27,6 +27,20 @@ body {
     color: var(--text-color);
     background: #f8fafc;
     min-height: 100vh;
+    position: relative;
+}
+
+/* Background wallpaper avec z-index négatif */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../images/hero-bg.jpg') center/cover no-repeat;
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Hero Section */
