@@ -451,10 +451,8 @@ function displayAccess($destination) {
         }
         
         .lightbox img {
-            max-width: 98vw;
-            max-height: 92vh;
-            width: auto;
-            height: auto;
+            width: 90vw;
+            height: 90vh;
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
