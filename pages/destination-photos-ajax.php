@@ -55,7 +55,7 @@ if ($action === 'upload' && $destination_id) {
                         
                         // Insérer en base
                         $stmt = $pdo->prepare("
-                            INSERT INTO destination_photos (destination_id, filename, legende, ordre)
+                            INSERT INTO destination_photos (destination_id, chemin_fichier, legende, ordre)
                             VALUES (?, ?, ?, ?)
                         ");
                         $ordre = $i;
