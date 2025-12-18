@@ -128,15 +128,23 @@ $stats = [
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/page-header.css">
+    <style>
+        body {
+            background-image: url('../assets/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
 </head>
 <body>
     <?php include '../includes/header.php'; ?>
     
-    <main class="main-content admin-content">
+    <main class="main-content admin-content" style="padding-top: 6rem;">
         <div class="admin-container">
-            <div class="admin-header">
-                <h1>Gestion des utilisateurs</h1>
-                <a href="admin.php" class="btn btn-secondary">← Retour au tableau de bord</a>
+            <div class="page-header">
+                <h1 class="page-title">👥 Gestion des utilisateurs</h1>
             </div>
             
             <?php if ($success): ?>

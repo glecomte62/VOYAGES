@@ -47,14 +47,23 @@ $pageTitle = "Administration";
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/page-header.css">
+    <style>
+        body {
+            background-image: url('../assets/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
 </head>
 <body>
     <?php include '../includes/header.php'; ?>
 
-    <main class="admin-container">
-        <div class="admin-header">
-            <h1>🛡️ Administration</h1>
-            <p>Bienvenue <?= h($_SESSION['user_prenom']) ?></p>
+    <main class="admin-container" style="padding-top: 6rem;">
+        <div class="page-header">
+            <h1 class="page-title">🛡️ Administration</h1>
+            <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Bienvenue <?= h($_SESSION['user_prenom']) ?></p>
         </div>
 
         <!-- Statistiques -->

@@ -18,24 +18,26 @@ $voyages = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Voyages - VOYAGES</title>
+    <title>Mes Voyages - VOYAGES ULM</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/header.css">
+    <link rel="stylesheet" href="../assets/css/page-header.css">
+    <style>
+        body {
+            background-image: url('../assets/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <h1>VOYAGES</h1>
-            <ul>
-                <li><a href="../index.php">Accueil</a></li>
-                <li><a href="voyages.php">Mes Voyages</a></li>
-                <li><a href="itineraires.php">Itinéraires</a></li>
-                <li><a href="reservations.php">Réservations</a></li>
-            </ul>
-        </nav>
-    </header>
+    <?php include '../includes/header.php'; ?>
 
-    <main class="container">
-        <h2>Mes Voyages</h2>
+    <main class="container" style="padding-top: 6rem;">
+        <div class="page-header">
+            <h1 class="page-title">✈️ Mes Voyages</h1>
+        </div>
         
         <div class="page-actions">
             <a href="voyage-new.php" class="btn">+ Nouveau Voyage</a>
@@ -66,11 +68,5 @@ $voyages = $stmt->fetchAll();
             <?php endif; ?>
         </div>
     </main>
-
-    <footer>
-        <p>&copy; <?php echo date('Y'); ?> VOYAGES - Tous droits réservés</p>
-    </footer>
-
-    <script src="../assets/js/main.js"></script>
 </body>
 </html>

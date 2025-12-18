@@ -134,11 +134,18 @@ $recent = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion Aérodromes - Admin VOYAGES</title>
+    <title>Gestion Aérodromes - Admin VOYAGES ULM</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
+        body {
+            background-image: url('../assets/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
         .import-section {
             background: white;
             border-radius: 16px;
@@ -224,10 +231,10 @@ $recent = $stmt->fetchAll();
 <body>
     <?php include '../includes/header.php'; ?>
 
-    <div class="admin-container">
-        <div class="admin-header">
-            <h1>🛫 Gestion des Aérodromes</h1>
-            <p>Import et gestion de la base de données des aérodromes français</p>
+    <div class="admin-container" style="padding-top: 6rem;">
+        <div class="page-header">
+            <h1 class="page-title">🛫 Gestion des Aérodromes</h1>
+            <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Import et gestion de la base de données des aérodromes français</p>
         </div>
 
         <?php if ($message): ?>
