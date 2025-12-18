@@ -247,6 +247,13 @@ $stats = [
                                     </td>
                                     <td><?php echo formatDate($user['created_at'], 'd/m/Y'); ?></td>
                                     <td class="actions-cell">
+                                        <!-- Éditer -->
+                                        <a href="admin-user-edit.php?id=<?php echo $user['id']; ?>" 
+                                           class="btn-action btn-edit" 
+                                           title="Éditer">
+                                            ✏️
+                                        </a>
+                                        
                                         <?php if ($user['id'] !== $_SESSION['user_id']): ?>
                                             <!-- Changer le rôle -->
                                             <form method="POST" style="display: inline;">
@@ -278,8 +285,6 @@ $stats = [
                                                     🗑️
                                                 </button>
                                             </form>
-                                        <?php else: ?>
-                                            <span class="text-muted">C'est vous</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
