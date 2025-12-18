@@ -1,7 +1,7 @@
 /* Header & Navigation - Compact Design */
 .page-header {
-    background: #1e293b;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #fbbf24 0%, #84cc16 50%, #10b981 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -148,7 +148,7 @@
 }
 
 .dropdown-menu a:hover {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(132, 204, 22, 0.3);
     color: white;
 }
 
@@ -167,7 +167,7 @@
 }
 
 .nav-link-user {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(132, 204, 22, 0.3);
     color: white;
 }
 
@@ -193,7 +193,7 @@
 
 .btn-register {
     padding: 0.4rem 1rem;
-    background: #3b82f6;
+    background: #84cc16;
     color: white;
     text-decoration: none;
     border-radius: 6px;
