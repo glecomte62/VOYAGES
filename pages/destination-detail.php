@@ -702,7 +702,7 @@ function displayAccess($destination) {
                                     <?php foreach ($clubs_membres[$club['id']] as $membre): ?>
                                         <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border: 2px solid #bae6fd; transition: all 0.3s;">
                                             <?php if ($membre['photo']): ?>
-                                                <img src="../uploads/users/<?php echo h($membre['photo']); ?>" 
+                                                <img src="../uploads/photos/<?php echo h($membre['photo']); ?>" 
                                                      alt="<?php echo h($membre['prenom'] . ' ' . $membre['nom']); ?>"
                                                      style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #0ea5e9; flex-shrink: 0;">
                                             <?php else: ?>
