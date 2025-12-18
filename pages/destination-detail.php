@@ -73,7 +73,6 @@ try {
 
 // Pour chaque club, récupérer les membres
 $clubs_membres = [];
-$debug_info = [];
 if (!empty($clubs_lies)) {
     foreach ($clubs_lies as $club) {
         try {
@@ -85,13 +84,10 @@ if (!empty($clubs_lies)) {
                 ORDER BY u.nom ASC, u.prenom ASC
             ");
             $stmtMembres->execute([$club['id']]);
-            $membres = $stmtMembres->fetchAll();
-            $clubs_membres[$club['id']] = $membres;
-            $debug_info[] = "Club " . $club['nom'] . " (ID: " . $club['id'] . ") - " . count($membres) . " membres trouvés";
+            $clubs_membres[$club['id']] = $stmtMembres->fetchAll();
         } catch (PDOException $e) {
             // Table membres_clubs n'existe pas encore - initialiser avec tableau vide
             $clubs_membres[$club['id']] = [];
-            $debug_info[] = "Erreur pour club " . $club['nom'] . ": " . $e->getMessage();
         }
     }
 }
@@ -647,16 +643,6 @@ function displayAccess($destination) {
         <!-- Clubs liés à cette destination -->
         <div class="content-card full-width-card" style="margin-bottom: 2rem;">
             <h2>🏛️ Clubs associés à ce terrain</h2>
-            
-            <!-- Debug Info -->
-            <?php if (!empty($debug_info)): ?>
-                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem;">
-                    <strong>Debug:</strong><br>
-                    <?php foreach ($debug_info as $info): ?>
-                        <?php echo h($info); ?><br>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
             
             <?php if (!empty($clubs_lies)): ?>
                 <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">
