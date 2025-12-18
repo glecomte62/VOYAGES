@@ -789,9 +789,20 @@ function displayAccess($destination) {
     
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
-        // Initialiser Fancybox
+        // Initialiser Fancybox avec fond blanc
         Fancybox.bind("[data-fancybox]", {
-            // Options
+            backdrop: "white",
+            backdropClick: "close",
+            Toolbar: {
+                display: {
+                    left: [],
+                    middle: [],
+                    right: ["close"],
+                },
+            },
+            Thumbs: {
+                type: "classic",
+            },
         });
         
         // Supprimer une photo
