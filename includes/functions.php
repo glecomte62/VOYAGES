@@ -228,6 +228,64 @@ function resizeImage($filepath, $maxWidth = 400, $maxHeight = 400) {
 }
 
 /**
+ * Upload une photo de destination SANS redimensionnement (qualité maximale)
+ * @param array $file Fichier uploadé ($_FILES)
+ * @param string $uploadDir Répertoire de destination
+ * @return array ['success' => bool, 'filename' => string, 'error' => string]
+ */
+function uploadDestinationPhoto($file, $uploadDir = '../uploads/destinations/') {
+    $result = ['success' => false, 'filename' => '', 'error' => ''];
+    
+    // Vérifier si un fichier a été uploadé
+    if (!isset($file) || $file['error'] === UPLOAD_ERR_NO_FILE) {
+        return $result;
+    }
+    
+    // Vérifier les erreurs d'upload
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        $result['error'] = 'Erreur lors de l\'upload du fichier';
+        return $result;
+    }
+    
+    // Vérifier la taille (max 10Mo pour les photos de destinations)
+    if ($file['size'] > 10 * 1024 * 1024) {
+        $result['error'] = 'La photo ne doit pas dépasser 10 Mo';
+        return $result;
+    }
+    
+    // Vérifier le type MIME
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mimeType, $allowedTypes)) {
+        $result['error'] = 'Format de photo non autorisé (JPG, PNG, GIF, WEBP uniquement)';
+        return $result;
+    }
+    
+    // Créer le répertoire si nécessaire
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    // Générer un nom de fichier unique
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $filename = uniqid('dest_') . '.' . $extension;
+    $filepath = $uploadDir . $filename;
+    
+    // Déplacer le fichier SANS redimensionnement
+    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+        $result['success'] = true;
+        $result['filename'] = $filename;
+    } else {
+        $result['error'] = 'Erreur lors de l\'enregistrement du fichier';
+    }
+    
+    return $result;
+}
+
+/**
  * Supprime une photo de profil
  * @param string $filename Nom du fichier
  * @param string $uploadDir Répertoire d'upload

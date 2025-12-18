@@ -48,7 +48,7 @@ if ($action === 'upload' && $destination_id) {
                         'size' => $_FILES['photos']['size'][$i]
                     ];
                     
-                    $result = uploadPhoto($file, '../uploads/destinations/');
+                    $result = uploadDestinationPhoto($file, '../uploads/destinations/');
                     
                     if ($result['success']) {
                         $legende = $_POST['legende'][$i] ?? '';
