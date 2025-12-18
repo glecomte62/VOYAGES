@@ -273,6 +273,11 @@ $stats = [
         .btn-delete:hover {
             background: #fecaca;
         }
+        
+        .admin-container {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
