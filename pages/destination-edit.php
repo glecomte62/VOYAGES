@@ -79,10 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Le nom et l\'aérodrome sont obligatoires');
         }
         
-        // Upload de la photo si présente
+        // Upload de la photo si présente (qualité maximale sans compression)
         $photo_filename = $destination['photo_principale'];
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = uploadPhoto($_FILES['photo'], '../uploads/destinations/');
+            $uploadResult = uploadDestinationPhoto($_FILES['photo'], '../uploads/destinations/');
             if ($uploadResult['success']) {
                 // Supprimer l'ancienne photo si elle existe
                 if ($photo_filename && file_exists('../uploads/destinations/' . $photo_filename)) {
@@ -859,55 +859,46 @@ Exemples de mise en forme :
                         </button>
                     </div>
                 </div>
-            </form>
-        </div>
-        
-        <!-- Clubs associés au terrain -->
-        <div class="form-card" id="clubs-section">
-            <h2>🏛️ Clubs associés à ce terrain</h2>
-            <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">
-                Sélectionnez les clubs qui utilisent régulièrement ce terrain. Les membres de ces clubs seront visibles sur la fiche de la destination.
-            </p>
-            
-            <form method="POST" action="#clubs-section">
-                <?php if (!empty($allClubs)): ?>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                        <?php foreach ($allClubs as $club): ?>
-                            <label style="display: flex; align-items: start; gap: 0.75rem; padding: 1rem; background: #f8fafc; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s;"
-                                   onmouseover="this.style.background='#e0f2fe'; this.style.borderColor='#06b6d4';"
-                                   onmouseout="this.style.background='#f8fafc'; this.style.borderColor='transparent';">
-                                <input type="checkbox" 
-                                       name="clubs[]" 
-                                       value="<?php echo $club['id']; ?>"
-                                       <?php echo in_array($club['id'], $linkedClubIds) ? 'checked' : ''; ?>
-                                       style="margin-top: 0.25rem;">
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; color: #0c4a6e;">
-                                        🏛️ <?php echo h($club['nom']); ?>
+                
+                <!-- Clubs associés au terrain -->
+                <div style="margin-top: 2rem;">
+                    <h3 style="color: #0c4a6e; margin-bottom: 1rem;">🏛️ Clubs associés à ce terrain</h3>
+                    <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">
+                        Sélectionnez les clubs qui utilisent régulièrement ce terrain. Les membres de ces clubs seront visibles sur la fiche de la destination.
+                    </p>
+                    <?php if (!empty($allClubs)): ?>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <?php foreach ($allClubs as $club): ?>
+                                <label style="display: flex; align-items: start; gap: 0.75rem; padding: 1rem; background: #f8fafc; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s;"
+                                       onmouseover="this.style.background='#e0f2fe'; this.style.borderColor='#06b6d4';"
+                                       onmouseout="this.style.background='#f8fafc'; this.style.borderColor='transparent';">
+                                    <input type="checkbox" 
+                                           name="clubs[]" 
+                                           value="<?php echo $club['id']; ?>"
+                                           <?php echo in_array($club['id'], $linkedClubIds) ? 'checked' : ''; ?>
+                                           style="margin-top: 0.25rem;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #0c4a6e;">
+                                            🏛️ <?php echo h($club['nom']); ?>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
+                                            <?php if ($club['ville']): ?>
+                                                📍 <?php echo h($club['ville']); ?>
+                                            <?php endif; ?>
+                                            <?php if ($club['code_oaci']): ?>
+                                                • <?php echo h($club['code_oaci']); ?>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
-                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
-                                        <?php if ($club['ville']): ?>
-                                            📍 <?php echo h($club['ville']); ?>
-                                        <?php endif; ?>
-                                        <?php if ($club['code_oaci']): ?>
-                                            • <?php echo h($club['code_oaci']); ?>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem;">
-                        <button type="submit" class="btn-primary" style="flex: 1;">
-                            ✅ Enregistrer les clubs associés
-                        </button>
-                    </div>
-                <?php else: ?>
-                    <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                        ⚠️ Aucun club disponible. <a href="clubs.php" style="color: #92400e; font-weight: 600;">Ajouter des clubs</a>
-                    </div>
-                <?php endif; ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            ⚠️ Aucun club disponible. <a href="clubs.php" style="color: #92400e; font-weight: 600;">Ajouter des clubs</a>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </form>
         </div>
         
