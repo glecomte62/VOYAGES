@@ -95,11 +95,6 @@ unset($dest); // Détruire la référence
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
-        body {
-            background: url('../assets/images/hero-bg.jpg') center/cover no-repeat fixed;
-            min-height: 100vh;
-        }
-        
         .page-content {
             max-width: 1400px;
             margin: 0 auto;
@@ -413,20 +408,18 @@ unset($dest); // Détruire la référence
 <body>
     <?php include '../includes/header.php'; ?>
 
-    <div class="page-content">
+    <main style="padding-top: 6rem;">
         <div class="page-header">
             <?php if ($favorisOnly): ?>
-                <h1 class="page-title">
-                    ⭐ Mes destinations favorites
-                </h1>
-                <p class="page-subtitle">Retrouvez toutes vos destinations enregistrées en favoris</p>
+                <h1 class="page-title">⭐ Mes destinations favorites</h1>
+                <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Retrouvez toutes vos destinations enregistrées en favoris</p>
             <?php else: ?>
-                <h1 class="page-title">
-                    🗺️ Catalogue des destinations
-                </h1>
-                <p class="page-subtitle">Découvrez les plus beaux terrains et aérodromes accessibles en ULM et petit avion</p>
+                <h1 class="page-title">🗺️ Catalogue des destinations</h1>
+                <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Découvrez toutes les destinations accessibles en ULM et petit avion</p>
             <?php endif; ?>
         </div>
+        
+        <div class="page-content">
         
         <?php if ($favorisOnly): ?>
             <a href="destinations.php" style="display: inline-block; margin-bottom: 1.5rem; color: #fbbf24; text-decoration: none; font-weight: 600; background: white; padding: 0.75rem 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
@@ -558,7 +551,9 @@ unset($dest); // Détruire la référence
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-    </div>
+        
+        </div><!-- .page-content -->
+    </main>
 
     <script src="../assets/js/main.js"></script>
 </body>
