@@ -789,15 +789,20 @@ function displayAccess($destination) {
     
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
-        // Initialiser Fancybox avec fond blanc
+        // Initialiser Fancybox avec fond blanc et haute qualité
         Fancybox.bind("[data-fancybox]", {
             backdrop: "white",
             backdropClick: "close",
+            Image: {
+                zoom: false,
+                click: false,
+                wheel: false,
+            },
             Toolbar: {
                 display: {
-                    left: [],
+                    left: ["infobar"],
                     middle: [],
-                    right: ["close"],
+                    right: ["iterateZoom", "slideshow", "thumbs", "close"],
                 },
             },
             Thumbs: {
