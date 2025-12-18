@@ -880,6 +880,7 @@ function displayAccess($destination) {
     </div>
     
     <script>
+        // Version 2024-12-18 17:00
         const galleryPhotos = <?php echo json_encode(array_map(function($p) {
             return [
                 'src' => '../uploads/destinations/' . $p['filename'],
@@ -890,7 +891,7 @@ function displayAccess($destination) {
         let currentPhotoIndex = 0;
         
         function openLightbox(index) {
-            event.stopPropagation();
+            if (typeof index !== 'number') return;
             currentPhotoIndex = index;
             showPhoto(index);
             document.getElementById('lightbox').classList.add('active');
@@ -901,31 +902,36 @@ function displayAccess($destination) {
             if (galleryPhotos.length === 0) return;
             
             const photo = galleryPhotos[index];
-            document.getElementById('lightbox-img').src = photo.src;
-            document.getElementById('lightbox-caption').textContent = photo.legende || '';
-            document.getElementById('lightbox-caption').style.display = photo.legende ? 'block' : 'none';
-            
-            // Afficher/masquer les boutons de navigation selon le nombre de photos
+            const img = document.getElementById('lightbox-img');
+            const caption = document.getElementById('lightbox-caption');
+            const counter = document.getElementById('lightbox-counter');
             const prevBtn = document.querySelector('.lightbox-nav.prev');
             const nextBtn = document.querySelector('.lightbox-nav.next');
+            
+            img.src = photo.src;
+            caption.textContent = photo.legende || '';
+            caption.style.display = photo.legende ? 'block' : 'none';
+            
             if (galleryPhotos.length > 1) {
                 if (prevBtn) prevBtn.style.display = 'flex';
                 if (nextBtn) nextBtn.style.display = 'flex';
-                document.getElementById('lightbox-counter').textContent = `${index + 1} / ${galleryPhotos.length}`;
-                document.getElementById('lightbox-counter').style.display = 'block';
+                counter.textContent = `${index + 1} / ${galleryPhotos.length}`;
+                counter.style.display = 'block';
             } else {
                 if (prevBtn) prevBtn.style.display = 'none';
                 if (nextBtn) nextBtn.style.display = 'none';
-                document.getElementById('lightbox-counter').style.display = 'none';
+                counter.style.display = 'none';
             }
         }
         
         function nextPhoto() {
+            if (galleryPhotos.length === 0) return;
             currentPhotoIndex = (currentPhotoIndex + 1) % galleryPhotos.length;
             showPhoto(currentPhotoIndex);
         }
         
         function prevPhoto() {
+            if (galleryPhotos.length === 0) return;
             currentPhotoIndex = (currentPhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length;
             showPhoto(currentPhotoIndex);
         }
@@ -937,11 +943,16 @@ function displayAccess($destination) {
         
         // Fermer avec Echap et naviguer avec flèches
         document.addEventListener('keydown', function(e) {
-            if (!document.getElementById('lightbox').classList.contains('active')) return;
+            const lightbox = document.getElementById('lightbox');
+            if (!lightbox.classList.contains('active')) return;
             
-            if (e.key === 'Escape') closeLightbox();
-            else if (e.key === 'ArrowRight') nextPhoto();
-            else if (e.key === 'ArrowLeft') prevPhoto();
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowRight') {
+                nextPhoto();
+            } else if (e.key === 'ArrowLeft') {
+                prevPhoto();
+            }
         });
         
         // Carte Leaflet
