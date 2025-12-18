@@ -138,7 +138,6 @@ $recent = $stmt->fetchAll();
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
-    <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
         .import-section {
             background: white;
@@ -222,12 +221,12 @@ $recent = $stmt->fetchAll();
         }
     </style>
 </head>
-<body>
+<body style="padding-top: 5rem;">
     <?php include '../includes/header.php'; ?>
 
-    <div class="admin-container" style="padding-top: 6rem;">
-        <div class="page-header">
-            <h1 class="page-title">🛫 Gestion des Aérodromes</h1>
+    <div class="admin-container">
+        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">🛫 Gestion des Aérodromes</h1>
             <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Import et gestion de la base de données des aérodromes français</p>
         </div>
 

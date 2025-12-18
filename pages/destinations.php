@@ -93,7 +93,6 @@ unset($dest); // Détruire la référence
     <title>Destinations - VOYAGES ULM</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
-    <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
         .page-content {
             max-width: 1400px;
@@ -405,17 +404,15 @@ unset($dest); // Détruire la référence
         }
     </style>
 </head>
-<body>
+<body style="padding-top: 5rem;">
     <?php include '../includes/header.php'; ?>
 
-    <main style="padding-top: 6rem;">
-        <div class="page-header">
+    <main>
+        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
             <?php if ($favorisOnly): ?>
-                <h1 class="page-title">⭐ Mes destinations favorites</h1>
-                <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Retrouvez toutes vos destinations enregistrées en favoris</p>
+                <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">⭐ Mes destinations favorites</h1>
             <?php else: ?>
-                <h1 class="page-title">🗺️ Catalogue des destinations</h1>
-                <p style="text-align: center; color: white; margin-top: 0.5rem; font-size: 1.1rem;">Découvrez toutes les destinations accessibles en ULM et petit avion</p>
+                <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">🗺️ Catalogue des destinations</h1>
             <?php endif; ?>
         </div>
         

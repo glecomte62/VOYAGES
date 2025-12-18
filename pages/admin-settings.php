@@ -115,7 +115,6 @@ try {
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
-    <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
         .settings-grid {
             display: grid;
@@ -279,12 +278,12 @@ try {
         }
     </style>
 </head>
-<body>
+<body style="padding-top: 5rem;">
     <?php include '../includes/header.php'; ?>
 
-    <main class="container" style="padding-top: 6rem;">
-        <div class="page-header">
-            <h1 class="page-title">⚙️ Paramètres du Site</h1>
+    <main class="container">
+        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">⚙️ Paramètres du Site</h1>
         </div>
 
         <div class="admin-content">
