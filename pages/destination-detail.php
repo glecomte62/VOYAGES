@@ -132,7 +132,7 @@ function displayAccess($destination) {
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body {
@@ -623,9 +623,8 @@ function displayAccess($destination) {
                 <?php foreach ($photos as $index => $photo): ?>
                     <div class="gallery-item">
                         <a href="../uploads/destinations/<?php echo h($photo['filename']); ?>" 
-                           class="glightbox"
-                           data-gallery="gallery"
-                           data-description="<?php echo h($photo['legende'] ?? ''); ?>">
+                           data-fancybox="gallery"
+                           data-caption="<?php echo h($photo['legende'] ?? ''); ?>">
                             <img src="../uploads/destinations/<?php echo h($photo['filename']); ?>" 
                                  alt="<?php echo h($photo['legende'] ?? ''); ?>">
                         </a>
@@ -788,13 +787,11 @@ function displayAccess($destination) {
         <?php endif; ?>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/gh/mcstudios/glightbox/dist/js/glightbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
-        // Initialiser GLightbox
-        const lightbox = GLightbox({
-            touchNavigation: true,
-            loop: true,
-            autoplayVideos: true
+        // Initialiser Fancybox
+        Fancybox.bind("[data-fancybox]", {
+            // Options
         });
         
         // Supprimer une photo
