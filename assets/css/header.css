@@ -2,9 +2,11 @@
 .page-header {
     background: linear-gradient(135deg, #fbbf24 0%, #84cc16 50%, #10b981 100%);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 1000;
+    left: 0;
+    right: 0;
+    z-index: 10000;
 }
 
 .page-navbar {
