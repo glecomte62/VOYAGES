@@ -41,9 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("UPDATE users SET derniere_connexion = NOW() WHERE id = ?");
             $stmt->execute([$user['id']]);
             
+            // Log de connexion réussie
+            logConnexion($user['id'], $email, 'succes');
+            
             header('Location: ../index.php');
             exit;
         } else {
+            // Log de connexion échouée
+            logConnexion(null, $email, 'echec');
+            
             $error = 'Email ou mot de passe incorrect';
         }
     }

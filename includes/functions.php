@@ -302,3 +302,42 @@ function deletePhoto($filename, $uploadDir = '../uploads/photos/') {
     return false;
 }
 
+/**
+ * Enregistre une tentative de connexion dans les logs
+ * @param int|null $userId ID de l'utilisateur (null si échec)
+ * @param string $email Email utilisé pour la connexion
+ * @param string $statut 'succes' ou 'echec'
+ * @return bool
+ */
+function logConnexion($userId, $email, $statut) {
+    global $conn;
+    
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO logs_connexions (user_id, email, statut, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("issss", $userId, $email, $statut, $ipAddress, $userAgent);
+    
+    return $stmt->execute();
+}
+
+/**
+ * Enregistre une opération effectuée par un utilisateur
+ * @param int $userId ID de l'utilisateur
+ * @param string $action Type d'action (CREATE, UPDATE, DELETE, etc.)
+ * @param string $tableAffectee Nom de la table affectée
+ * @param int|null $idElement ID de l'élément affecté
+ * @param string|null $details Détails supplémentaires (JSON ou texte)
+ * @return bool
+ */
+function logOperation($userId, $action, $tableAffectee, $idElement = null, $details = null) {
+    global $conn;
+    
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    
+    $stmt = $conn->prepare("INSERT INTO logs_operations (user_id, action, table_affectee, id_element, details, ip_address) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ississ", $userId, $action, $tableAffectee, $idElement, $details, $ipAddress);
+    
+    return $stmt->execute();
+}
+

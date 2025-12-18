@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menu Admin - Style Inline</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-button {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test visibilité bouton Administration</h1>
+    
+    <h2>Bouton avec style inline (doit être rouge) :</h2>
+    <button class="test-button">⚙️ Administration TEST</button>
+    
+    <h2>Menu complet avec CSS du site :</h2>
+    <link rel="stylesheet" href="assets/css/header.css">
+    
+    <div style="background: #1e293b; padding: 1rem;">
+        <div class="nav-dropdown nav-admin" style="display: inline-block;">
+            <button class="nav-link dropdown-toggle nav-link-admin">
+                <span class="nav-icon">⚙️</span>
+                Administration
+                <span class="dropdown-arrow">▼</span>
+            </button>
+        </div>
+    </div>
+    
+    <p>Si vous voyez un bouton rouge "Administration" ci-dessus, le CSS fonctionne.</p>
+</body>
+</html>
