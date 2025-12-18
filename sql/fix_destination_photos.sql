@@ -1,13 +1,13 @@
 -- Script pour corriger la table destination_photos
 -- À exécuter dans phpMyAdmin
 
--- Vérifier si la table existe
-SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE 
-FROM information_schema.COLUMNS 
-WHERE TABLE_SCHEMA = 'kica7829_voyages' 
-AND TABLE_NAME = 'destination_photos';
+-- Vérifier si la table existe et sa structure
+SHOW TABLES LIKE 'destination_photos';
 
--- Si la table existe avec de mauvaises colonnes, la supprimer d'abord
+-- Voir la structure actuelle
+DESCRIBE destination_photos;
+
+-- Si la table existe avec de mauvaises colonnes, la supprimer d'abord (décommenter si nécessaire)
 -- DROP TABLE IF EXISTS destination_photos;
 
 -- Créer ou recréer la table avec la bonne structure
