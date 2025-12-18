@@ -43,25 +43,20 @@ $destinations_json = json_encode($destinations);
     <style>
         #map {
             height: 600px;
-            width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .map-section {
             background: white;
-            padding: 4rem 0;
+            padding: 3rem 0;
+            margin: 4rem 0;
         }
         .map-section h2 {
             text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #0f172a;
-        }
-        .map-section p {
-            text-align: center;
-            font-size: 1.1rem;
-            color: #64748b;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
+            color: #2c3e50;
+            font-size: 2rem;
         }
     </style>
 </head>
@@ -92,16 +87,7 @@ $destinations_json = json_encode($destinations);
                 <img src="assets/images/LOGO-LEGER.jpeg" alt="Logo Voyages ULM" class="badge-logo">
                 <p class="badge-location">Maubeuge</p>
             </div>
-        </secCarte interactive des destinations -->
-        <section class="map-section">
-            <div class="container">
-                <h2>🗺️ Carte des destinations</h2>
-                <p>Explorez toutes nos destinations sur la carte de France</p>
-                <div id="map"></div>
-            </div>
         </section>
-
-        <!-- tion>
 
         <!-- Stats Section -->
         <section class="stats-section">
@@ -123,6 +109,14 @@ $destinations_json = json_encode($destinations);
                         <div class="stat-label">Clubs</div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Map Section -->
+        <section class="map-section">
+            <div class="container">
+                <h2>🗺️ Carte des destinations</h2>
+                <div id="map"></div>
             </div>
         </section>
 
@@ -210,101 +204,74 @@ $destinations_json = json_encode($destinations);
         </div>
     </footer>
 
+    <script src="assets/js/main.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Données des destinations
-        const destinations = <?php echo $destinations_json; ?>;
-        
         // Initialiser la carte centrée sur la France
         const map = L.map('map').setView([46.603354, 1.888334], 6);
-        
-        // Ajouter le fond de carte OpenStreetMap
+
+        // Ajouter les tuiles OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
+            maxZoom: 19
         }).addTo(map);
-        
-        // Icônes personnalisées
-        const iconULM = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+
+        // Définir des icônes personnalisées par type d'accès
+        const iconULM = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background-color: #28a745; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
-        
-        const iconAvion = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+
+        const iconAvion = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background-color: #007bff; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
-        
-        const iconMixte = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+
+        const iconMixte = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background-color: #ff8c00; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
-        
+
+        // Charger les destinations depuis PHP
+        const destinations = <?php echo $destinations_json; ?>;
+        console.log('Nombre de destinations:', destinations.length);
+
         // Ajouter les marqueurs
         destinations.forEach(dest => {
-            if (dest.latitude && dest.longitude) {
-                // Choisir l'icône selon le type
-                let icon = iconMixte;
-                if (dest.acces_ulm == 1 && dest.acces_avion == 0) {
-                    icon = iconULM;
-                } else if (dest.acces_avion == 1 && dest.acces_ulm == 0) {
-                    icon = iconAvion;
-                }
-                
-                // Type d'accès
-                let typeAcces = '';
-                if (dest.acces_ulm == 1 && dest.acces_avion == 1) {
-                    typeAcces = '🪂 ULM • ✈️ Avion';
-                } else if (dest.acces_ulm == 1) {
-                    typeAcces = '🪂 ULM uniquement';
-                } else if (dest.acces_avion == 1) {
-                    typeAcces = '✈️ Avion uniquement';
-                }
-                
-                const marker = L.marker([parseFloat(dest.latitude), parseFloat(dest.longitude)], {icon: icon})
-                    .addTo(map)
-                    .bindPopup(`
-                        <div style="min-width: 200px;">
-                            <h3 style="margin: 0 0 0.5rem; font-size: 1.1rem; color: #0f172a;">${dest.nom}</h3>
-                            <p style="margin: 0.25rem 0; color: #64748b; font-size: 0.9rem;">
-                                <strong>📍</strong> ${dest.aerodrome || ''} ${dest.code_oaci ? '(' + dest.code_oaci + ')' : ''}
-                            </p>
-                            <p style="margin: 0.25rem 0; color: #64748b; font-size: 0.9rem;">
-                                <strong>🏙️</strong> ${dest.ville || ''}
-                            </p>
-                            <p style="margin: 0.5rem 0; color: #3b82f6; font-size: 0.85rem;">
-                                ${typeAcces}
-                            </p>
-                            <a href="pages/destination-detail.php?id=${dest.id}" 
-                               style="display: inline-block; margin-top: 0.5rem; padding: 0.5rem 1rem; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-size: 0.85rem;">
-                                Voir les détails →
-                            </a>
-                        </div>
-                    `);
+            // Déterminer le type d'accès
+            let type_acces = '';
+            let icon = iconMixte;
+            
+            if (dest.acces_ulm == 1 && dest.acces_avion == 1) {
+                type_acces = 'ULM et Avion';
+                icon = iconMixte;
+            } else if (dest.acces_ulm == 1) {
+                type_acces = 'ULM uniquement';
+                icon = iconULM;
+            } else if (dest.acces_avion == 1) {
+                type_acces = 'Avion uniquement';
+                icon = iconAvion;
             }
+
+            const marker = L.marker([dest.latitude, dest.longitude], {icon: icon})
+                .addTo(map)
+                .bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h3 style="margin: 0 0 10px 0; color: #2c3e50;">${dest.nom}</h3>
+                        <p style="margin: 5px 0;"><strong>Aérodrome:</strong> ${dest.aerodrome}</p>
+                        <p style="margin: 5px 0;"><strong>Code OACI:</strong> ${dest.code_oaci}</p>
+                        <p style="margin: 5px 0;"><strong>Ville:</strong> ${dest.ville}</p>
+                        <p style="margin: 5px 0;"><strong>Accès:</strong> ${type_acces}</p>
+                        <a href="pages/destination-detail.php?id=${dest.id}" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">Voir détails</a>
+                    </div>
+                `);
         });
     </script>
-    <script src="   <p>Application développée pour la communauté ULM</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; <?php echo date('Y'); ?> VOYAGES ULM - Tous droits réservés</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="assets/js/main.js"></script>
 </body>
 </html>
