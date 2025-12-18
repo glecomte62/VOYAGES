@@ -435,15 +435,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
-<body>
+<body style="padding-top: 5rem;">
     <?php include '../includes/header.php'; ?>
 
-    <div class="hero-banner">
-        <h1 class="hero-title">👤 Mon Profil</h1>
-        <p class="hero-subtitle">Gérez vos informations personnelles et vos clubs</p>
-    </div>
-
     <div class="container">
+        <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 2rem;">👤 Mon Profil</h1>
+        
         <?php if ($error): ?>
             <div class="alert alert-error"><?php echo h($error); ?></div>
         <?php endif; ?>
