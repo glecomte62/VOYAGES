@@ -422,6 +422,35 @@ function displayAccess($destination) {
             font-size: 0.875rem;
         }
         
+        .delete-photo-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .gallery-item:hover .delete-photo-btn {
+            opacity: 1;
+        }
+        
+        .delete-photo-btn:hover {
+            background: rgb(220, 38, 38);
+            transform: scale(1.1);
+        }
+        
         .lightbox {
             display: none;
             position: fixed;
@@ -429,11 +458,12 @@ function displayAccess($destination) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             flex-direction: column;
+            padding: 2rem;
         }
         
         .lightbox.active {
@@ -442,8 +472,12 @@ function displayAccess($destination) {
         
         .lightbox-content {
             position: relative;
-            width: 100%;
-            height: 100%;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 95vw;
+            max-height: 95vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -451,28 +485,22 @@ function displayAccess($destination) {
         }
         
         .lightbox img {
-            max-width: 90vw;
-            max-height: 90vh;
+            max-width: calc(95vw - 3rem);
+            max-height: calc(90vh - 3rem);
             width: auto;
             height: auto;
             object-fit: contain;
             border-radius: 4px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
         }
         
         .lightbox-caption {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            background: rgba(0, 0, 0, 0.8);
+            margin-top: 1rem;
+            color: #1f2937;
+            background: #f3f4f6;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
             text-align: center;
-            max-width: 90%;
+            max-width: 100%;
             font-size: 1rem;
         }
         
@@ -712,9 +740,17 @@ function displayAccess($destination) {
             <h2>📷 Galerie photos (<?php echo count($photos); ?>)</h2>
             <div class="photo-gallery">
                 <?php foreach ($photos as $index => $photo): ?>
-                    <div class="gallery-item" onclick="openLightbox(<?php echo $index; ?>)" style="cursor: pointer;">
+                    <div class="gallery-item">
                         <img src="../uploads/destinations/<?php echo h($photo['filename']); ?>" 
-                             alt="<?php echo h($photo['legende'] ?? ''); ?>">
+                             alt="<?php echo h($photo['legende'] ?? ''); ?>"
+                             onclick="openLightbox(<?php echo $index; ?>)">
+                        <?php if (isLoggedIn()): ?>
+                            <button class="delete-photo-btn" 
+                                    onclick="event.stopPropagation(); deletePhoto(<?php echo $photo['id']; ?>, this.closest('.gallery-item'))"
+                                    title="Supprimer cette photo">
+                                ✕
+                            </button>
+                        <?php endif; ?>
                         <?php if ($photo['legende']): ?>
                             <div class="legende">
                                 <?php echo h($photo['legende']); ?>
@@ -954,6 +990,44 @@ function displayAccess($destination) {
                 prevPhoto();
             }
         });
+        
+        // Supprimer une photo
+        function deletePhoto(photoId, galleryItem) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette photo ?')) {
+                return;
+            }
+            
+            fetch('destination-photos-ajax.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=delete&photo_id=${photoId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Animer la suppression
+                    galleryItem.style.transition = 'all 0.3s';
+                    galleryItem.style.opacity = '0';
+                    galleryItem.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        galleryItem.remove();
+                        // Recharger la page si plus de photos
+                        const remaining = document.querySelectorAll('.gallery-item').length;
+                        if (remaining === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                } else {
+                    alert('Erreur lors de la suppression : ' + (data.error || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur réseau lors de la suppression');
+            });
+        }
         
         // Carte Leaflet
         document.addEventListener('DOMContentLoaded', function() {
