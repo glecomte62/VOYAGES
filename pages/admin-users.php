@@ -129,14 +129,6 @@ $stats = [
     <link rel="stylesheet" href="../assets/css/header.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <link rel="stylesheet" href="../assets/css/page-header.css">
-    <style>
-        body {
-            background-image: url('../assets/images/hero-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-    </style>
 </head>
 <body>
     <?php include '../includes/header.php'; ?>

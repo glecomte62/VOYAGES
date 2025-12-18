@@ -161,13 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../assets/css/admin.css">
     <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
-        body {
-            background-image: url('../assets/images/hero-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-        
         .edit-container {
             max-width: 1200px;
             margin: 0 auto;

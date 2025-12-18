@@ -7,10 +7,7 @@
     left: 0;
     right: 0;
     width: 100%;
-    z-index: 999999;
-    isolation: isolate;
-    transform: translateZ(100px);
-    will-change: transform;
+    z-index: 1000;
 }
 
 .page-navbar {
@@ -22,7 +19,6 @@
     align-items: center;
     gap: 2rem;
     position: relative;
-    z-index: 999999;
 }
 
 .header-brand {
@@ -107,12 +103,10 @@
 
 .nav-dropdown {
     position: relative;
-    z-index: 999999;
 }
 
 .dropdown-toggle {
     position: relative;
-    z-index: 999999;
 }
 
 .dropdown-arrow {
@@ -136,17 +130,16 @@
     padding: 0.5rem;
     opacity: 0;
     visibility: hidden;
-    transform: translateZ(200px) translateY(-10px);
+    transform: translateY(-10px);
     transition: all 0.3s ease;
-    z-index: 999999 !important;
+    z-index: 1001;
     pointer-events: none;
-    isolation: isolate;
 }
 
 .nav-dropdown.active .dropdown-menu {
     opacity: 1;
     visibility: visible;
-    transform: translateZ(200px) translateY(0);
+    transform: translateY(0);
     pointer-events: auto;
 }
 

@@ -140,12 +140,6 @@ $recent = $stmt->fetchAll();
     <link rel="stylesheet" href="../assets/css/admin.css">
     <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
-        body {
-            background-image: url('../assets/images/hero-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
         .import-section {
             background: white;
             border-radius: 16px;

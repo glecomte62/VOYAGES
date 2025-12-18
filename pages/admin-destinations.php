@@ -138,12 +138,6 @@ $stats = [
     <link rel="stylesheet" href="../assets/css/admin.css">
     <link rel="stylesheet" href="../assets/css/page-header.css">
     <style>
-        body {
-            background-image: url('../assets/images/hero-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
         .destination-row {
             display: grid;
             grid-template-columns: 80px 2fr 1fr 1fr 120px 150px 200px;
