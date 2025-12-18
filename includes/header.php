@@ -104,9 +104,6 @@ $baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
                     </button>
                     <div class="dropdown-menu">
                         <a href="<?php echo $baseUrl; ?>pages/profil.php">Mon profil</a>
-                        <a href="<?php echo $baseUrl; ?>pages/voyages.php">Mes vols</a>
-                        <a href="<?php echo $baseUrl; ?>pages/favoris.php">Mes favoris</a>
-                        <a href="<?php echo $baseUrl; ?>pages/parametres.php">Paramètres</a>
                         <div class="dropdown-divider"></div>
                         <a href="<?php echo $baseUrl; ?>pages/logout.php" class="logout-link">Déconnexion</a>
                     </div>
