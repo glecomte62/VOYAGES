@@ -458,91 +458,51 @@ function displayAccess($destination) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: auto;
         }
         
         .lightbox.active {
-            display: block;
+            display: flex;
         }
         
         .lightbox-wrapper {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            position: relative;
+            background: white;
             padding: 2rem;
-        }
-        
-        .lightbox-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
+            max-width: calc(100vw - 4rem);
+            max-height: calc(100vh - 4rem);
+            overflow: auto;
         }
         
         .lightbox-content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
-            margin-bottom: 1rem;
+            display: inline-block;
         }
         
         .lightbox img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            box-shadow: 0 10px 60px rgba(0, 0, 0, 0.8);
-        }
-        
-        .lightbox-thumbnails {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-            overflow-x: auto;
-            padding: 1rem 0;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-        }
-        
-        .lightbox-thumbnail {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            cursor: pointer;
-            opacity: 0.5;
-            transition: all 0.3s;
-            border: 3px solid transparent;
-            flex-shrink: 0;
-        }
-        
-        .lightbox-thumbnail:hover {
-            opacity: 0.8;
-        }
-        
-        .lightbox-thumbnail.active {
-            opacity: 1;
-            border-color: #fbbf24;
-            transform: scale(1.1);
-        }
-        
-        .lightbox-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 6px;
+            display: block;
+            max-width: none;
+            max-height: none;
+            width: auto;
+            height: auto;
+            border-radius: 4px;
         }
         
         .lightbox-caption {
             text-align: center;
-            color: white;
-            background: rgba(0, 0, 0, 0.6);
+            color: #1f2937;
+            background: #f3f4f6;
             padding: 1rem 2rem;
             border-radius: 8px;
-            margin-top: 1rem;
-            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            font-size: 1rem;
         }
         
         .lightbox-close {
@@ -946,28 +906,21 @@ function displayAccess($destination) {
     
     <!-- Lightbox pour agrandir les photos -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <div class="lightbox-counter" id="lightbox-counter" style="position: absolute; top: 2rem; left: 50%; transform: translateX(-50%); color: white; background: rgba(0,0,0,0.7); padding: 0.5rem 1.5rem; border-radius: 20px; font-size: 0.9rem; z-index: 10000;"></div>
+        <button class="lightbox-nav prev" onclick="event.stopPropagation(); prevPhoto()">‹</button>
+        <button class="lightbox-nav next" onclick="event.stopPropagation(); nextPhoto()">›</button>
+        
         <div class="lightbox-wrapper" onclick="event.stopPropagation()">
-            <div class="lightbox-header">
-                <div class="lightbox-counter" id="lightbox-counter" style="color: white; font-size: 1.2rem; font-weight: 600;"></div>
-                <div style="display: flex; gap: 1rem;">
-                    <button class="lightbox-nav prev" onclick="prevPhoto()" style="position: static; transform: none;">‹</button>
-                    <button class="lightbox-nav next" onclick="nextPhoto()" style="position: static; transform: none;">›</button>
-                    <button class="lightbox-close" onclick="closeLightbox()" style="position: static;">&times;</button>
-                </div>
-            </div>
-            
             <div class="lightbox-content">
                 <img id="lightbox-img" src="" alt="Photo agrandie">
             </div>
-            
             <div id="lightbox-caption" class="lightbox-caption"></div>
-            
-            <div class="lightbox-thumbnails" id="lightbox-thumbnails"></div>
         </div>
     </div>
     
     <script>
-        // Version 2024-12-18 18:00 - Galerie avec vignettes
+        // Version 2024-12-18 18:30 - Lightbox cadre centré taille réelle
         const galleryPhotos = <?php echo json_encode(array_map(function($p) {
             return [
                 'src' => '../uploads/destinations/' . $p['filename'],
@@ -980,47 +933,9 @@ function displayAccess($destination) {
         function openLightbox(index) {
             if (typeof index !== 'number') return;
             currentPhotoIndex = index;
-            buildThumbnails();
             showPhoto(index);
             document.getElementById('lightbox').classList.add('active');
             document.body.style.overflow = 'hidden';
-        }
-        
-        function buildThumbnails() {
-            const container = document.getElementById('lightbox-thumbnails');
-            container.innerHTML = '';
-            
-            galleryPhotos.forEach((photo, index) => {
-                const thumb = document.createElement('div');
-                thumb.className = 'lightbox-thumbnail';
-                if (index === currentPhotoIndex) {
-                    thumb.classList.add('active');
-                }
-                
-                const img = document.createElement('img');
-                img.src = photo.src;
-                img.alt = photo.legende || '';
-                
-                thumb.appendChild(img);
-                thumb.onclick = () => {
-                    currentPhotoIndex = index;
-                    showPhoto(index);
-                    updateThumbnails();
-                };
-                
-                container.appendChild(thumb);
-            });
-        }
-        
-        function updateThumbnails() {
-            const thumbs = document.querySelectorAll('.lightbox-thumbnail');
-            thumbs.forEach((thumb, index) => {
-                if (index === currentPhotoIndex) {
-                    thumb.classList.add('active');
-                } else {
-                    thumb.classList.remove('active');
-                }
-            });
         }
         
         function showPhoto(index) {
@@ -1034,9 +949,13 @@ function displayAccess($destination) {
             img.src = photo.src;
             caption.textContent = photo.legende || '';
             caption.style.display = photo.legende ? 'block' : 'none';
-            counter.textContent = `${index + 1} / ${galleryPhotos.length}`;
             
-            updateThumbnails();
+            if (galleryPhotos.length > 1) {
+                counter.textContent = `${index + 1} / ${galleryPhotos.length}`;
+                counter.style.display = 'block';
+            } else {
+                counter.style.display = 'none';
+            }
         }
         
         function nextPhoto() {
