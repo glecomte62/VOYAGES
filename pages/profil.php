@@ -4,6 +4,7 @@
  */
 
 require_once '../includes/session.php';
+requireLogin();
 require_once '../config/config.php';
 require_once '../config/database.php';
 require_once '../includes/functions.php';
@@ -44,6 +45,50 @@ try {
     // Table user_clubs n'existe pas encore
 }
 
+// Récupérer le terrain d'attache si défini
+$terrainAttache = null;
+try {
+    if (isset($user['terrain_attache_id']) && $user['terrain_attache_id'] && isset($user['terrain_attache_type'])) {
+        if ($user['terrain_attache_type'] === 'aerodrome') {
+            $stmt = $pdo->prepare("SELECT id, nom, oaci as code_oaci, ville FROM aerodromes_fr WHERE id = ?");
+        } else {
+            $stmt = $pdo->prepare("SELECT id, nom, oaci as code_oaci, ville FROM ulm_bases_fr WHERE id = ?");
+        }
+        $stmt->execute([$user['terrain_attache_id']]);
+        $terrainAttache = $stmt->fetch();
+        if ($terrainAttache) {
+            $terrainAttache['type'] = $user['terrain_attache_type'];
+        }
+    }
+} catch (PDOException $e) {
+    // Colonnes n'existent pas encore
+}
+
+// Récupérer tous les terrains pour le sélecteur (aérodromes + bases ULM)
+$terrains = [];
+try {
+    // D'abord essayer avec les tables sources si elles existent
+    $stmt = $pdo->query("
+        SELECT 'aerodrome' as type, id, nom, oaci as code_oaci, ville 
+        FROM aerodromes_fr 
+        WHERE oaci IS NOT NULL AND oaci != '' AND nom IS NOT NULL
+        UNION
+        SELECT 'base_ulm' as type, id, nom, oaci as code_oaci, ville 
+        FROM ulm_bases_fr 
+        WHERE oaci IS NOT NULL AND oaci != '' AND nom IS NOT NULL
+        ORDER BY nom ASC
+    ");
+    $terrains = $stmt->fetchAll();
+} catch (PDOException $e) {
+    // Si les tables sources n'existent pas, utiliser destinations
+    try {
+        $stmt = $pdo->query("SELECT id, nom, code_oaci, ville FROM destinations WHERE actif = 1 ORDER BY nom ASC");
+        $terrains = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        // Table destinations inaccessible
+    }
+}
+
 // Compter les contributions
 $nbDestinations = 0;
 try {
@@ -60,6 +105,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prenom = trim($_POST['prenom'] ?? '');
     $telephone = trim($_POST['telephone'] ?? '');
     $email = trim($_POST['email'] ?? '');
+    $terrain_attache = $_POST['terrain_attache'] ?? '';
+    $terrain_attache_type = null;
+    $terrain_attache_id = null;
+    
+    // Parser le terrain d'attache (format: "type:id")
+    if (!empty($terrain_attache) && strpos($terrain_attache, ':') !== false) {
+        list($terrain_attache_type, $terrain_attache_id) = explode(':', $terrain_attache, 2);
+        $terrain_attache_id = intval($terrain_attache_id);
+    }
+    
     $current_password = $_POST['current_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
     $new_password_confirm = $_POST['new_password_confirm'] ?? '';
@@ -112,12 +167,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Mettre à jour
         if (empty($error)) {
             if ($passwordUpdated) {
-                $stmt = $pdo->prepare("UPDATE users SET nom = ?, prenom = ?, telephone = ?, email = ?, password = ?, photo = ? WHERE id = ?");
+                $stmt = $pdo->prepare("UPDATE users SET nom = ?, prenom = ?, telephone = ?, email = ?, password = ?, photo = ?, terrain_attache_type = ?, terrain_attache_id = ? WHERE id = ?");
                 $password_hash = password_hash($new_password, PASSWORD_DEFAULT);
-                $stmt->execute([$nom, $prenom, $telephone, $email, $password_hash, $newPhotoFilename, $_SESSION['user_id']]);
+                $stmt->execute([$nom, $prenom, $telephone, $email, $password_hash, $newPhotoFilename, $terrain_attache_type, $terrain_attache_id, $_SESSION['user_id']]);
             } else {
-                $stmt = $pdo->prepare("UPDATE users SET nom = ?, prenom = ?, telephone = ?, email = ?, photo = ? WHERE id = ?");
-                $stmt->execute([$nom, $prenom, $telephone, $email, $newPhotoFilename, $_SESSION['user_id']]);
+                $stmt = $pdo->prepare("UPDATE users SET nom = ?, prenom = ?, telephone = ?, email = ?, photo = ?, terrain_attache_type = ?, terrain_attache_id = ? WHERE id = ?");
+                $stmt->execute([$nom, $prenom, $telephone, $email, $newPhotoFilename, $terrain_attache_type, $terrain_attache_id, $_SESSION['user_id']]);
             }
             
             $_SESSION['user_nom'] = $nom;
@@ -528,6 +583,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-group">
                             <label for="telephone">Téléphone</label>
                             <input type="tel" id="telephone" name="telephone" value="<?php echo h($user['telephone']); ?>" placeholder="+33 6 12 34 56 78">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="terrain_attache">✈️ Terrain d'attache</label>
+                            <select id="terrain_attache" name="terrain_attache">
+                                <option value="">-- Aucun terrain sélectionné --</option>
+                                <?php foreach ($terrains as $terrain): ?>
+                                    <?php 
+                                        $value = (isset($terrain['type']) ? $terrain['type'] : 'aerodrome') . ':' . $terrain['id'];
+                                        $selected = '';
+                                        if (isset($user['terrain_attache_id']) && isset($user['terrain_attache_type'])) {
+                                            $current = $user['terrain_attache_type'] . ':' . $user['terrain_attache_id'];
+                                            $selected = ($value === $current) ? 'selected' : '';
+                                        }
+                                    ?>
+                                    <option value="<?php echo $value; ?>" <?php echo $selected; ?>>
+                                        <?php echo h($terrain['nom']); ?>
+                                        <?php if ($terrain['code_oaci']): ?>
+                                            (<?php echo h($terrain['code_oaci']); ?>)
+                                        <?php endif; ?>
+                                        <?php if ($terrain['ville']): ?>
+                                            - <?php echo h($terrain['ville']); ?>
+                                        <?php endif; ?>
+                                        <?php if (isset($terrain['type'])): ?>
+                                            [<?php echo $terrain['type'] === 'aerodrome' ? '✈️' : '🪂'; ?>]
+                                        <?php endif; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         
                         <div class="form-group">

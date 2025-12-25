@@ -3,15 +3,10 @@
  * Page d'édition de destination (collaborative)
  */
 
-session_start();
+require_once '../includes/session.php';
+requireLogin();
 require_once '../config/database.php';
 require_once '../includes/functions.php';
-
-// Vérifier que l'utilisateur est connecté
-if (!isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
 
 $pdo = getDBConnection();
 $id = $_GET['id'] ?? null;

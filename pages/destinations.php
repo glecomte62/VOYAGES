@@ -4,6 +4,7 @@
  */
 
 require_once '../includes/session.php';
+requireLogin();
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
@@ -12,6 +13,40 @@ $pdo = getDBConnection();
 $search = $_GET['search'] ?? '';
 $type = $_GET['type'] ?? '';
 $favorisOnly = isset($_GET['favoris']) && $_GET['favoris'] == '1';
+$maxDistance = isset($_GET['distance']) && is_numeric($_GET['distance']) ? (int)$_GET['distance'] : null;
+$maxTemps = isset($_GET['temps']) && is_numeric($_GET['temps']) ? (int)$_GET['temps'] : null;
+
+// Récupérer le terrain d'attache de l'utilisateur (toujours si connecté)
+$terrainAttacheLat = null;
+$terrainAttacheLon = null;
+$terrainAttacheNom = null;
+
+if (isLoggedIn()) {
+    $userId = $_SESSION['user_id'];
+    $stmtUser = $pdo->prepare("SELECT terrain_attache_type, terrain_attache_id FROM users WHERE id = ?");
+    $stmtUser->execute([$userId]);
+    $userData = $stmtUser->fetch();
+    
+    if ($userData && $userData['terrain_attache_type'] && $userData['terrain_attache_id']) {
+        $terrainType = $userData['terrain_attache_type'];
+        $terrainId = $userData['terrain_attache_id'];
+        
+        // Récupérer les coordonnées du terrain d'attache
+        if ($terrainType === 'aerodrome') {
+            $stmtTerrain = $pdo->prepare("SELECT nom, lat as latitude, lon as longitude FROM aerodromes_fr WHERE id = ?");
+        } else {
+            $stmtTerrain = $pdo->prepare("SELECT nom, lat as latitude, lon as longitude FROM ulm_bases_fr WHERE id = ?");
+        }
+        $stmtTerrain->execute([$terrainId]);
+        $terrain = $stmtTerrain->fetch();
+        
+        if ($terrain) {
+            $terrainAttacheLat = $terrain['latitude'];
+            $terrainAttacheLon = $terrain['longitude'];
+            $terrainAttacheNom = $terrain['nom'];
+        }
+    }
+}
 
 // Si on demande les favoris, vérifier que l'utilisateur est connecté
 if ($favorisOnly && !isLoggedIn()) {
@@ -36,7 +71,7 @@ if ($favorisOnly) {
     }
     
     if ($type === 'ulm') {
-        $sql .= " AND d.acces_ulm = 1";
+        $sql .= " AND d.acces_ulm = 1 AND d.acces_avion = 0";
     } elseif ($type === 'avion') {
         $sql .= " AND d.acces_avion = 1";
     }
@@ -54,7 +89,7 @@ if ($favorisOnly) {
     }
 
     if ($type === 'ulm') {
-        $sql .= " AND acces_ulm = 1";
+        $sql .= " AND acces_ulm = 1 AND acces_avion = 0";
     } elseif ($type === 'avion') {
         $sql .= " AND acces_avion = 1";
     }
@@ -65,6 +100,51 @@ if ($favorisOnly) {
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $destinations = $stmt->fetchAll();
+
+// Filtrer par distance/temps si demandé et si on a le terrain d'attache
+if (($maxDistance || $maxTemps) && $terrainAttacheLat && $terrainAttacheLon) {
+    $destinationsFiltered = [];
+    
+    foreach ($destinations as $dest) {
+        if ($dest['latitude'] && $dest['longitude']) {
+            // Calcul de la distance avec formule de Haversine
+            $lat1 = deg2rad($terrainAttacheLat);
+            $lon1 = deg2rad($terrainAttacheLon);
+            $lat2 = deg2rad($dest['latitude']);
+            $lon2 = deg2rad($dest['longitude']);
+            
+            $dlat = $lat2 - $lat1;
+            $dlon = $lon2 - $lon1;
+            
+            $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
+            $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+            $distance = 6371 * $c; // Distance en km
+            
+            $dest['distance_from_base'] = round($distance, 1);
+            $dest['temps_vol'] = round($distance / 160 * 60); // Temps en minutes à 160 km/h
+            
+            // Appliquer le filtre
+            $include = true;
+            if ($maxDistance && $distance > $maxDistance) {
+                $include = false;
+            }
+            if ($maxTemps && ($distance / 160 * 60) > $maxTemps) {
+                $include = false;
+            }
+            
+            if ($include) {
+                $destinationsFiltered[] = $dest;
+            }
+        }
+    }
+    
+    // Trier par distance croissante
+    usort($destinationsFiltered, function($a, $b) {
+        return ($a['distance_from_base'] ?? 9999) <=> ($b['distance_from_base'] ?? 9999);
+    });
+    
+    $destinations = $destinationsFiltered;
+}
 
 // Pour chaque destination, récupérer les clubs liés
 foreach ($destinations as &$dest) {
@@ -408,11 +488,33 @@ unset($dest); // Détruire la référence
     <?php include '../includes/header.php'; ?>
 
     <main>
-        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 1rem;">
             <?php if ($favorisOnly): ?>
-                <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">⭐ Mes destinations favorites</h1>
+                <div style="text-align: center; margin-bottom: 2rem; background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+                    <h1 style="font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 700; background: linear-gradient(135deg, #fbbf24, #84cc16); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; word-wrap: break-word;">⭐ Mes destinations favorites</h1>
+                    <p style="font-size: clamp(0.9rem, 3vw, 1.1rem); color: #64748b;">Les aérodromes que vous avez mis en favoris</p>
+                </div>
             <?php else: ?>
-                <h1 style="font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">🗺️ Catalogue des destinations</h1>
+                <div style="text-align: center; margin-bottom: 2rem; background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+                    <h1 style="font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 700; background: linear-gradient(135deg, #0ea5e9, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; word-wrap: break-word;">
+                        <?php if ($type === 'ulm'): ?>
+                            🛩️ Destinations ULM
+                        <?php elseif ($type === 'avion'): ?>
+                            ✈️ Destinations Avion
+                        <?php else: ?>
+                            🗺️ Découvrez nos destinations
+                        <?php endif; ?>
+                    </h1>
+                    <p style="font-size: clamp(0.9rem, 3vw, 1.1rem); color: #64748b; padding: 0 0.5rem;">
+                        <?php if ($type === 'ulm'): ?>
+                            Explorez les aérodromes accessibles en ULM partout en France
+                        <?php elseif ($type === 'avion'): ?>
+                            Trouvez les meilleures pistes pour votre avion léger
+                        <?php else: ?>
+                            Explorez notre catalogue d'aérodromes pour ULM et avions légers
+                        <?php endif; ?>
+                    </p>
+                </div>
             <?php endif; ?>
         </div>
         
@@ -441,6 +543,28 @@ unset($dest); // Détruire la référence
                     <option value="avion" <?php echo $type === 'avion' ? 'selected' : ''; ?>>✈️ Avion uniquement</option>
                 </select>
                 
+                <?php if ($terrainAttacheLat && $terrainAttacheLon): ?>
+                    <select name="distance" class="search-select">
+                        <option value="">📏 Toutes distances</option>
+                        <option value="50" <?php echo $maxDistance == 50 ? 'selected' : ''; ?>>➡️ Moins de 50 km</option>
+                        <option value="100" <?php echo $maxDistance == 100 ? 'selected' : ''; ?>>➡️ Moins de 100 km</option>
+                        <option value="200" <?php echo $maxDistance == 200 ? 'selected' : ''; ?>>➡️ Moins de 200 km</option>
+                        <option value="500" <?php echo $maxDistance == 500 ? 'selected' : ''; ?>>➡️ Moins de 500 km</option>
+                    </select>
+                    
+                    <select name="temps" class="search-select">
+                        <option value="">⏱️ Tous temps de vol</option>
+                        <option value="30" <?php echo $maxTemps == 30 ? 'selected' : ''; ?>>⏱️ Moins de 30 min</option>
+                        <option value="60" <?php echo $maxTemps == 60 ? 'selected' : ''; ?>>⏱️ Moins de 1h</option>
+                        <option value="120" <?php echo $maxTemps == 120 ? 'selected' : ''; ?>>⏱️ Moins de 2h</option>
+                        <option value="180" <?php echo $maxTemps == 180 ? 'selected' : ''; ?>>⏱️ Moins de 3h</option>
+                    </select>
+                <?php elseif (isLoggedIn()): ?>
+                    <div style="background: #fef3c7; color: #92400e; padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.875rem;">
+                        💡 <a href="profil.php" style="color: #92400e; text-decoration: underline;">Définissez votre terrain d'attache</a> pour activer les filtres par distance/temps
+                    </div>
+                <?php endif; ?>
+                
                 <button type="submit" class="btn-search">Rechercher</button>
                 
                 <?php if (isLoggedIn()): ?>
@@ -454,6 +578,11 @@ unset($dest); // Détruire la référence
                 <div class="stat-badge">
                     <strong><?php echo count($destinations); ?></strong> destination<?php echo count($destinations) > 1 ? 's' : ''; ?> trouvée<?php echo count($destinations) > 1 ? 's' : ''; ?>
                 </div>
+                <?php if (($maxDistance || $maxTemps) && $terrainAttacheNom): ?>
+                    <div class="stat-badge" style="background: #dbeafe; color: #1e40af;">
+                        📍 Depuis <strong><?php echo h($terrainAttacheNom); ?></strong>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
@@ -503,6 +632,26 @@ unset($dest); // Détruire la référence
                                 <span>📍</span>
                                 <span><?php echo h($dest['ville']); ?>, <?php echo h($dest['pays']); ?></span>
                             </div>
+                            
+                            <?php if (isset($dest['distance_from_base'])): ?>
+                                <div class="destination-info" style="background: #dbeafe; padding: 0.5rem; border-radius: 8px; margin: 0.75rem 0;">
+                                    <span>📏</span>
+                                    <span><strong><?php echo $dest['distance_from_base']; ?> km</strong> depuis votre terrain</span>
+                                </div>
+                                <div class="destination-info" style="background: #e0e7ff; padding: 0.5rem; border-radius: 8px; margin: 0.75rem 0;">
+                                    <span>⏱️</span>
+                                    <span><strong><?php 
+                                        $heures = floor($dest['temps_vol'] / 60);
+                                        $minutes = $dest['temps_vol'] % 60;
+                                        if ($heures > 0) {
+                                            echo $heures . 'h';
+                                            if ($minutes > 0) echo ' ' . $minutes . 'min';
+                                        } else {
+                                            echo $minutes . 'min';
+                                        }
+                                    ?></strong> de vol (160 km/h)</span>
+                                </div>
+                            <?php endif; ?>
                             
                             <div class="destination-tags">
                                 <?php if ($dest['acces_ulm']): ?>

@@ -3,16 +3,12 @@
  * Gestion des favoris de destination (AJAX)
  */
 
-session_start();
+require_once '../includes/session.php';
+requireLogin();
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
 header('Content-Type: application/json');
-
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'error' => 'Non autorisé']);
-    exit;
-}
 
 try {
     $pdo = getDBConnection();

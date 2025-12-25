@@ -14,6 +14,7 @@ if (isset($_SESSION['user_id'])) {
 require_once '../config/config.php';
 require_once '../config/database.php';
 require_once '../includes/functions.php';
+require_once '../includes/mail.php';
 
 $error = '';
 $success = '';
@@ -60,13 +61,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($error)) {
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
                 
+                // Générer un token d'activation
+                $activation_token = bin2hex(random_bytes(32));
+                $activation_expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                
                 $stmt = $pdo->prepare("
-                    INSERT INTO users (email, password, nom, prenom, telephone, photo) 
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO users (email, password, nom, prenom, telephone, photo, email_verified, activation_token, activation_token_expires) 
+                    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
                 ");
                 
-                if ($stmt->execute([$email, $password_hash, $nom, $prenom, $telephone, $photoFilename])) {
-                    $success = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
+                if ($stmt->execute([$email, $password_hash, $nom, $prenom, $telephone, $photoFilename, $activation_token, $activation_expires])) {
+                    // Envoyer l'email d'activation
+                    if (sendActivationEmail($email, $nom, $prenom, $activation_token)) {
+                        $success = 'Compte créé avec succès ! Un email d\'activation a été envoyé à ' . htmlspecialchars($email) . '. Veuillez vérifier votre boîte de réception (et vos spams) pour activer votre compte.';
+                    } else {
+                        $success = 'Compte créé avec succès ! Cependant, l\'email d\'activation n\'a pas pu être envoyé. Contactez un administrateur.';
+                    }
                 } else {
                     $error = 'Erreur lors de la création du compte';
                     // Supprimer la photo si échec
@@ -271,12 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <?php include '../includes/header.php'; ?>
     
-    <div class="hero-banner">
-        <h1 class="hero-title">✈️ Rejoignez la communauté</h1>
-        <p class="hero-subtitle">Créez votre compte et commencez à partager vos aventures aériennes</p>
-    </div>
-    
-    <div class="container">
+    <div class="container" style="padding-top: 5rem;">
         <div class="auth-card">
             <div class="club-badge">
                 <h3>🤝 Rejoignez notre communauté ULM</h3>

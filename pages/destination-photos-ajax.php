@@ -3,7 +3,8 @@
  * Gestion des photos de destination (AJAX)
  */
 
-session_start();
+require_once '../includes/session.php';
+requireLogin();
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
@@ -11,12 +12,6 @@ require_once '../includes/functions.php';
 ob_start();
 
 header('Content-Type: application/json');
-
-if (!isLoggedIn()) {
-    ob_end_clean();
-    echo json_encode(['success' => false, 'error' => 'Non autorisé']);
-    exit;
-}
 
 try {
     $pdo = getDBConnection();

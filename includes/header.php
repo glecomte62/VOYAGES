@@ -7,6 +7,38 @@ if (!function_exists('isLoggedIn')) {
 // Déterminer le chemin de base (si on est dans /pages/ ou à la racine)
 $baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
 ?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="VOYAGES ULM">
+    <meta name="description" content="Plateforme collaborative pour partager vos destinations ULM et avion léger">
+    <meta name="theme-color" content="#0ea5e9">
+    
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Voyages ULM">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="<?php echo $baseUrl; ?>assets/images/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo $baseUrl; ?>assets/images/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="<?php echo $baseUrl; ?>assets/images/icons/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="<?php echo $baseUrl; ?>assets/images/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="<?php echo $baseUrl; ?>assets/images/icons/icon-512x512.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="<?php echo $baseUrl; ?>manifest.json">
+    
+    <!-- Apple Splash Screens -->
+    <link rel="apple-touch-startup-image" href="<?php echo $baseUrl; ?>assets/images/icons/icon-512x512.png">
+</head>
+<body>
 <header class="page-header">
     <nav class="page-navbar">
         <a href="<?php echo $baseUrl; ?>index.php" class="header-brand">
@@ -94,6 +126,11 @@ $baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
                     <a href="<?php echo $baseUrl; ?>pages/membres.php">Annuaire pilotes</a>
                 </div>
             </div>
+            
+            <a href="<?php echo $baseUrl; ?>pages/about.php" class="nav-link">
+                <span class="nav-icon">ℹ️</span>
+                À propos
+            </a>
 
             <?php if (isLoggedIn()): ?>
                 <div class="nav-dropdown">

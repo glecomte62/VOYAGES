@@ -112,6 +112,11 @@ $pageTitle = "Administration";
                     <h3>Paramètres</h3>
                     <p>Configuration générale du site</p>
                 </a>
+                <a href="smtp-test.php" class="admin-card">
+                    <span class="admin-icon">📧</span>
+                    <h3>Test SMTP</h3>
+                    <p>Tester l'envoi d'emails</p>
+                </a>
             </div>
         </div>
 

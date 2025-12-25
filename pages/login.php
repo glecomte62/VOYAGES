@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Log de connexion réussie
             logConnexion($user['id'], $email, 'succes');
             
+            // Rediriger vers l'accueil
             header('Location: ../index.php');
             exit;
         } else {
@@ -54,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Définir le préfixe pour les assets
+$assetPrefix = '../';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -61,8 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - VOYAGES ULM</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="../assets/css/header.css">
+    <link rel="stylesheet" href="<?php echo $assetPrefix; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo $assetPrefix; ?>assets/css/header.css">
     <style>
         body {
             margin: 0;
@@ -354,13 +358,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </svg>
                 </div>
                 <h1>VOYAGES ULM</h1>
-                <p>Partagez vos aventures aériennes</p>
+                <p>Catalogue de destinations pour pilotes</p>
             </div>
             
             <div class="club-banner">
                 <p>🏛️ Application du</p>
                 <h3>Club ULM Évasion</h3>
-                <p>Maubeuge</p>
+                <p>Maubeuge • LFQJ</p>
+            </div>
+            
+            <div style="background: #ecfeff; border-left: 4px solid #06b6d4; padding: 1.5rem; margin: 0;">
+                <h3 style="margin: 0 0 0.75rem; color: #0e7490; font-size: 1.125rem; font-weight: 600;">✈️ Découvrez nos destinations</h3>
+                <p style="margin: 0 0 0.5rem; color: #155e75; font-size: 0.875rem; line-height: 1.6;">
+                    <strong>VOYAGES ULM</strong> est votre compagnon de vol ! Explorez des centaines d'aérodromes et bases ULM, partagez vos découvertes avec photos et avis, calculez automatiquement vos temps de vol depuis votre terrain d'attache.
+                </p>
+                <p style="margin: 0.5rem 0 0; color: #155e75; font-size: 0.875rem; line-height: 1.6;">
+                    📍 <strong>Carte interactive</strong> • 📸 <strong>Galeries photos</strong> • ⏱️ <strong>Calcul de distances</strong> • 💬 <strong>Avis pilotes</strong>
+                </p>
+                <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: white; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0; color: #0891b2; font-weight: 600; font-size: 1rem;">🎁 100% GRATUIT ET LE RESTERA 🎁</p>
+                </div>
             </div>
             
             <div class="login-body">
@@ -403,12 +420,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>
                     Pas encore inscrit ? 
                     <a href="register.php">Créer un compte</a>
-                </p>
-                <div class="divider">
-                    <span>ou</span>
-                </div>
-                <p>
-                    <a href="../index.php">← Retour à l'accueil</a>
                 </p>
             </div>
         </div>

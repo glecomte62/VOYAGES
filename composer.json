@@ -1,0 +1,14 @@
+{
+    "name": "voyages/ulm",
+    "description": "Catalogue de destinations pour pilotes ULM et petit avion",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "files": [
+            "includes/functions.php"
+        ]
+    }
+}

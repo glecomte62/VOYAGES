@@ -38,6 +38,64 @@ if (!$destination) {
     exit;
 }
 
+// Calculer la distance et le temps de vol depuis le terrain d'attache de l'utilisateur
+$distanceKm = null;
+$tempsVolHeures = null;
+$terrainAttacheNom = null;
+
+if (isLoggedIn()) {
+    try {
+        // Récupérer le terrain d'attache de l'utilisateur
+        $stmtUser = $pdo->prepare("SELECT terrain_attache_type, terrain_attache_id FROM users WHERE id = ?");
+        $stmtUser->execute([$_SESSION['user_id']]);
+        $user = $stmtUser->fetch();
+        
+        if ($user && $user['terrain_attache_type'] && $user['terrain_attache_id']) {
+            $terrain = null;
+            
+            if ($user['terrain_attache_type'] === 'aerodrome') {
+                // Récupérer les coordonnées depuis aerodromes_fr
+                $stmtTerrain = $pdo->prepare("SELECT nom, lat as latitude, lon as longitude FROM aerodromes_fr WHERE id = ?");
+                $stmtTerrain->execute([$user['terrain_attache_id']]);
+                $terrain = $stmtTerrain->fetch();
+            } else {
+                // Récupérer les coordonnées depuis ulm_bases_fr
+                $stmtTerrain = $pdo->prepare("SELECT nom, lat as latitude, lon as longitude FROM ulm_bases_fr WHERE id = ?");
+                $stmtTerrain->execute([$user['terrain_attache_id']]);
+                $terrain = $stmtTerrain->fetch();
+            }
+            
+            if ($terrain && $terrain['latitude'] && $terrain['longitude'] && $destination['latitude'] && $destination['longitude']) {
+                $terrainAttacheNom = $terrain['nom'];
+                
+                // Formule de Haversine
+                $lat1 = deg2rad($terrain['latitude']);
+                $lon1 = deg2rad($terrain['longitude']);
+                $lat2 = deg2rad($destination['latitude']);
+                $lon2 = deg2rad($destination['longitude']);
+                
+                $earthRadius = 6371;
+                
+                $dLat = $lat2 - $lat1;
+                $dLon = $lon2 - $lon1;
+                
+                $a = sin($dLat/2) * sin($dLat/2) + 
+                     cos($lat1) * cos($lat2) * 
+                     sin($dLon/2) * sin($dLon/2);
+                $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+                
+                $distanceKm = round($earthRadius * $c, 1);
+                
+                // Calcul du temps de vol à 160 km/h
+                $vitesseCroisiere = 160;
+                $tempsVolHeures = round($distanceKm / $vitesseCroisiere, 1);
+            }
+        }
+    } catch (PDOException $e) {
+        // Erreur silencieuse
+    }
+}
+
 // Vérifier si la destination est en favoris (si l'utilisateur est connecté)
 $isFavorite = false;
 if (isLoggedIn()) {
@@ -160,6 +218,26 @@ function displayAccess($destination) {
     }
     return implode(' ', $access);
 }
+
+// Fonction pour rendre les emails et téléphones cliquables dans un texte
+function makeContactsClickable($text) {
+    // Convertir les emails en liens mailto
+    $text = preg_replace(
+        '/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/',
+        '<a href="mailto:$1" style="color: #0ea5e9; text-decoration: none;">$1</a>',
+        $text
+    );
+    
+    // Convertir les numéros de téléphone français en liens tel
+    // Format: 01.02.03.04.05 ou 01 02 03 04 05 ou 0102030405
+    $text = preg_replace(
+        '/(\+?33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/',
+        '<a href="tel:$0" style="color: #0ea5e9; text-decoration: none;">$0</a>',
+        $text
+    );
+    
+    return $text;
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -173,6 +251,10 @@ function displayAccess($destination) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        body {
+            padding-top: 80px;
+        }
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -241,18 +323,91 @@ function displayAccess($destination) {
             letter-spacing: 2px;
         }
         
+        .badge-distance, .badge-temps {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .destination-title {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .code-oaci {
+                align-self: flex-start;
+            }
+            
+            .badge-distance, .badge-temps {
+                min-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column !important;
+                width: 100%;
+            }
+            
+            .action-buttons a, .action-buttons button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        .badge-distance, .badge-temps {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .destination-title {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .code-oaci {
+                align-self: flex-start;
+            }
+            
+            .badge-distance, .badge-temps {
+                min-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column !important;
+                width: 100%;
+            }
+            
+            .action-buttons a, .action-buttons button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
         .destination-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
         
         .info-card {
-            background: #f8fafc;
+            background: white;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.25rem;
             border-left: 4px solid #06b6d4;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .info-card h3 {
@@ -274,6 +429,7 @@ function displayAccess($destination) {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
+            margin-top: 2rem;
             margin-bottom: 2rem;
         }
         
@@ -515,26 +671,11 @@ function displayAccess($destination) {
     <?php include '../includes/header.php'; ?>
     
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <a href="destinations.php" class="back-link" style="margin: 0;">
+        <!-- Header de navigation -->
+        <div style="margin-bottom: 1.5rem;">
+            <a href="destinations.php" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);">
                 ⬅️ Retour aux destinations
             </a>
-            
-            <div style="display: flex; gap: 1rem; align-items: center;">
-                <?php if (isLoggedIn()): ?>
-                    <button id="btn-favoris" 
-                            data-destination-id="<?php echo $id; ?>"
-                            data-is-favorite="<?php echo $isFavorite ? '1' : '0'; ?>"
-                            class="btn-favoris <?php echo $isFavorite ? 'is-favorite' : ''; ?>"
-                            style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: 2px solid #fbbf24; background: <?php echo $isFavorite ? '#fbbf24' : 'white'; ?>; color: <?php echo $isFavorite ? 'white' : '#fbbf24'; ?>; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
-                        <span class="favoris-icon"><?php echo $isFavorite ? '⭐' : '☆'; ?></span>
-                        <span class="favoris-text"><?php echo $isFavorite ? 'En favoris' : 'Ajouter aux favoris'; ?></span>
-                    </button>
-                    <a href="destination-edit.php?id=<?php echo $id; ?>" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; text-decoration: none; width: auto;">
-                        ✏️ Éditer cette destination
-                    </a>
-                <?php endif; ?>
-            </div>
         </div>
         
         <!-- Header avec titre et infos principales -->
@@ -564,7 +705,65 @@ function displayAccess($destination) {
                 <?php endif; ?>
             </div>
             
-            <div class="destination-info">
+            <!-- Badges distance/temps -->
+            <?php if ($distanceKm !== null && $tempsVolHeures !== null): ?>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                    <div class="badge-distance" style="background: #0ea5e9; color: white; padding: 1rem; border-radius: 8px;">
+                        <strong>Distance:</strong> <?php echo $distanceKm; ?> km
+                    </div>
+                    <div class="badge-temps" style="background: #8b5cf6; color: white; padding: 1rem; border-radius: 8px;">
+                        <strong>Temps de vol:</strong> 
+                        <?php 
+                        $heures = floor($tempsVolHeures);
+                        $minutes = round(($tempsVolHeures - $heures) * 60);
+                        if ($heures > 0) {
+                            echo $heures . 'h' . ($minutes > 0 ? sprintf('%02d', $minutes) : '');
+                        } else {
+                            echo $minutes . ' min';
+                        }
+                        ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Boutons d'action -->
+            <div class="action-buttons" style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <button id="btn-favoris" 
+                        data-destination-id="<?php echo $id; ?>"
+                        data-is-favorite="<?php echo $isFavorite ? '1' : '0'; ?>"
+                        class="btn-favoris <?php echo $isFavorite ? 'is-favorite' : ''; ?>"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: 2px solid #fbbf24; background: <?php echo $isFavorite ? '#fbbf24' : 'white'; ?>; color: <?php echo $isFavorite ? 'white' : '#fbbf24'; ?>; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    <span class="favoris-icon"><?php echo $isFavorite ? '⭐' : '☆'; ?></span>
+                    <span class="favoris-text"><?php echo $isFavorite ? 'En favoris' : 'Ajouter aux favoris'; ?></span>
+                </button>
+                <a href="destination-edit.php?id=<?php echo $id; ?>" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; text-decoration: none;">
+                    ✏️ Éditer
+                </a>
+                
+                <?php if ($destination['code_oaci']): ?>
+                    <?php if ($destination['acces_ulm'] && !$destination['acces_avion']): ?>
+                        <!-- Bouton Base ULM -->
+                        <a href="https://basulm.ffplum.fr/PDF/<?php echo h($destination['code_oaci']); ?>.pdf" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);">
+                            📄 Télécharger Base ULM
+                        </a>
+                    <?php else: ?>
+                        <!-- Bouton VAC -->
+                        <a href="https://www.sia.aviation-civile.gouv.fr/media/dvd/eAIP_27_NOV_2025/Atlas-VAC/PDF_AIPparSSection/VAC/AD/AD-2.<?php echo h($destination['code_oaci']); ?>.pdf" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">
+                            📄 Télécharger Carte VAC
+                        </a>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Informations principales -->
+        <div class="destination-info">
                 <div class="info-card">
                     <h3>📍 Coordonnées GPS</h3>
                     <p>
@@ -606,7 +805,6 @@ function displayAccess($destination) {
                     <p><?php echo h($destination['longueur_piste_m']); ?> mètres</p>
                 </div>
                 <?php endif; ?>
-            </div>
         </div>
         
         <!-- Grille principale -->
@@ -619,7 +817,7 @@ function displayAccess($destination) {
                         <?php if ($destination['photo_principale'] && !is_array($destination['photo_principale'])): ?>
                             <img src="/uploads/destinations/<?php echo h($destination['photo_principale']); ?>?v=<?php echo time(); ?>" 
                                  alt="<?php echo h($destination['nom']); ?>"
-                                 onerror="console.error('Erreur chargement photo:', this.src); this.parentElement.innerHTML='<div class=\"no-photo\">📸</div>';">
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;no-photo&quot;>📸</div>';">
                         <?php else: ?>
                             <div class="no-photo">📸</div>
                         <?php endif; ?>
@@ -668,7 +866,7 @@ function displayAccess($destination) {
             <h2>🗺️ Points d'intérêt touristiques</h2>
             <div class="description-text">
                 <?php if ($destination['points_interet']): ?>
-                    <?php echo nl2br(h($destination['points_interet'])); ?>
+                    <?php echo nl2br(makeContactsClickable(h($destination['points_interet']))); ?>
                 <?php else: ?>
                     <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 12px; color: #94a3b8;">
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">📍</div>
@@ -751,7 +949,7 @@ function displayAccess($destination) {
                         <div style="padding: 0.75rem; background: #f8fafc; border-radius: 8px; margin-bottom: 1rem;">
                             <?php if ($club['telephone']): ?>
                                 <div style="margin-bottom: 0.25rem; font-size: 0.875rem;">
-                                    📞 <?php echo h($club['telephone']); ?>
+                                    📞 <a href="tel:<?php echo h($club['telephone']); ?>" style="color: #0ea5e9; text-decoration: none;"><?php echo h($club['telephone']); ?></a>
                                 </div>
                             <?php endif; ?>
                             <?php if ($club['email']): ?>

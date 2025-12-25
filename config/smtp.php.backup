@@ -1,0 +1,17 @@
+<?php
+/**
+ * Configuration SMTP pour Google Workspace
+ */
+
+// Configuration SMTP Google Workspace
+define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_PORT', 587); // ou 465 pour SSL
+define('SMTP_SECURE', 'tls'); // ou 'ssl' si port 465
+define('SMTP_USERNAME', 'notifications@clubulmevasion.fr'); // À MODIFIER
+define('SMTP_PASSWORD', 'gjch cguf wrng oghx'); // À MODIFIER - Utiliser un mot de passe d'application Google
+define('SMTP_FROM_EMAIL', 'notifications@clubulmevasion.fr'); // À MODIFIER
+define('SMTP_FROM_NAME', 'Notifications VOYAGES ULM'); // À MODIFIER
+
+// Configuration générale
+define('SITE_URL', 'https://voyages.clubulmevasion.fr');
+define('SITE_NAME', 'VOYAGES ULM');

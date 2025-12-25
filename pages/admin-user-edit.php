@@ -57,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $telephone = trim($_POST['telephone'] ?? '');
         $role = $_POST['role'] ?? 'user';
         $actif = isset($_POST['actif']) ? 1 : 0;
+        $terrain_attache_type = !empty($_POST['terrain_attache_type']) ? $_POST['terrain_attache_type'] : null;
+        $terrain_attache_id = !empty($_POST['terrain_attache_id']) ? (int)$_POST['terrain_attache_id'] : null;
         
         // Validation
         if (empty($nom) || empty($prenom) || empty($email)) {
@@ -73,11 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Mise à jour
                 $stmt = $pdo->prepare("
                     UPDATE users 
-                    SET nom = ?, prenom = ?, email = ?, telephone = ?, role = ?, actif = ?
+                    SET nom = ?, prenom = ?, email = ?, telephone = ?, role = ?, actif = ?,
+                        terrain_attache_type = ?, terrain_attache_id = ?
                     WHERE id = ?
                 ");
                 
-                if ($stmt->execute([$nom, $prenom, $email, $telephone, $role, $actif, $userId])) {
+                if ($stmt->execute([$nom, $prenom, $email, $telephone, $role, $actif, $terrain_attache_type, $terrain_attache_id, $userId])) {
                     // Log de l'opération
                     logOperation($_SESSION['user_id'], 'UPDATE', 'users', $userId, 
                         "Modification utilisateur: $prenom $nom ($email)");
@@ -488,6 +491,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                         
+                        <div class="form-group">
+                            <label for="terrain_attache_type">Type de terrain d'attache</label>
+                            <select id="terrain_attache_type" name="terrain_attache_type" class="form-control">
+                                <option value="">Aucun</option>
+                                <option value="aerodrome" <?php echo ($user['terrain_attache_type'] ?? '') === 'aerodrome' ? 'selected' : ''; ?>>Aérodrome</option>
+                                <option value="base_ulm" <?php echo ($user['terrain_attache_type'] ?? '') === 'base_ulm' ? 'selected' : ''; ?>>Base ULM</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="terrain_attache_id">Terrain d'attache</label>
+                            <select id="terrain_attache_id" name="terrain_attache_id" class="form-control">
+                                <option value="">Aucun</option>
+                            </select>
+                        </div>
+                        
                         <button type="submit" class="btn btn-primary">💾 Enregistrer les modifications</button>
                     </form>
                 </div>
@@ -569,5 +588,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </main>
+    
+    <script>
+    // Gestion du terrain d'attache
+    const terrainTypeSelect = document.getElementById('terrain_attache_type');
+    const terrainIdSelect = document.getElementById('terrain_attache_id');
+    const currentTerrainId = <?php echo $user['terrain_attache_id'] ?? 'null'; ?>;
+    
+    function loadTerrains() {
+        const type = terrainTypeSelect.value;
+        
+        if (!type) {
+            terrainIdSelect.innerHTML = '<option value="">Aucun</option>';
+            terrainIdSelect.disabled = true;
+            return;
+        }
+        
+        terrainIdSelect.disabled = false;
+        terrainIdSelect.innerHTML = '<option value="">Chargement...</option>';
+        
+        const table = type === 'aerodrome' ? 'aerodromes_fr' : 'ulm_bases_fr';
+        
+        fetch('../api/get-terrains.php?type=' + type)
+            .then(response => response.json())
+            .then(data => {
+                let options = '<option value="">Sélectionner un terrain</option>';
+                data.forEach(terrain => {
+                    const selected = terrain.id == currentTerrainId ? 'selected' : '';
+                    options += `<option value="${terrain.id}" ${selected}>${terrain.nom}</option>`;
+                });
+                terrainIdSelect.innerHTML = options;
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                terrainIdSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            });
+    }
+    
+    terrainTypeSelect.addEventListener('change', loadTerrains);
+    
+    // Charger les terrains au chargement de la page si un type est déjà sélectionné
+    if (terrainTypeSelect.value) {
+        loadTerrains();
+    }
+    </script>
 </body>
 </html>
