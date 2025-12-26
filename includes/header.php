@@ -126,6 +126,21 @@ $baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
                     <a href="<?php echo $baseUrl; ?>pages/membres.php">Annuaire pilotes</a>
                 </div>
             </div>
+
+            <?php if (isLoggedIn()): ?>
+            <div class="nav-dropdown">
+                <button class="nav-link dropdown-toggle">
+                    <span class="nav-icon">✈️</span>
+                    Mes Voyages
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="<?php echo $baseUrl; ?>pages/voyages.php">Tous mes voyages</a>
+                    <a href="<?php echo $baseUrl; ?>pages/voyage-new.php">+ Nouveau voyage</a>
+                    <a href="<?php echo $baseUrl; ?>pages/itineraire-planner.php">Planificateur d'itinéraire</a>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <a href="<?php echo $baseUrl; ?>pages/about.php" class="nav-link">
                 <span class="nav-icon">ℹ️</span>

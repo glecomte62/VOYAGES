@@ -697,6 +697,33 @@ function makeContactsClickable($text) {
                             • <?php echo h($destination['pays']); ?>
                         <?php endif; ?>
                     </p>
+                    
+                    <?php if ($total_avis > 0): ?>
+                        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="color: #f59e0b; font-size: 1.5rem; letter-spacing: 0.1rem;">
+                                <?php 
+                                $fullStars = floor($note_moyenne);
+                                $hasHalfStar = ($note_moyenne - $fullStars) >= 0.5;
+                                
+                                for ($i = 0; $i < $fullStars; $i++) {
+                                    echo '⭐';
+                                }
+                                if ($hasHalfStar) {
+                                    echo '⭐';
+                                }
+                                for ($i = 0; $i < (5 - $fullStars - ($hasHalfStar ? 1 : 0)); $i++) {
+                                    echo '☆';
+                                }
+                                ?>
+                            </div>
+                            <div style="font-size: 1.25rem; font-weight: 600; color: #0c4a6e;">
+                                <?php echo $note_moyenne; ?>/5
+                            </div>
+                            <div style="color: #64748b; font-size: 1rem;">
+                                (<?php echo $total_avis; ?> avis)
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <?php if ($destination['code_oaci']): ?>
                     <div class="code-oaci">

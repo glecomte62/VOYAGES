@@ -56,8 +56,10 @@ if ($favorisOnly && !isLoggedIn()) {
 
 if ($favorisOnly) {
     // Requête pour les favoris uniquement
-    $sql = "SELECT d.* FROM destinations d
+    $sql = "SELECT d.*, AVG(ad.note) as avg_rating, COUNT(ad.id) as total_reviews 
+            FROM destinations d
             INNER JOIN favoris f ON d.id = f.destination_id
+            LEFT JOIN avis_destinations ad ON d.id = ad.destination_id
             WHERE d.actif = 1 AND f.user_id = ?";
     $params = [$_SESSION['user_id']];
     
@@ -76,25 +78,28 @@ if ($favorisOnly) {
         $sql .= " AND d.acces_avion = 1";
     }
     
-    $sql .= " ORDER BY d.nom ASC";
+    $sql .= " GROUP BY d.id ORDER BY d.nom ASC";
 } else {
     // Requête normale pour toutes les destinations
-    $sql = "SELECT * FROM destinations WHERE actif = 1";
+    $sql = "SELECT d.*, AVG(ad.note) as avg_rating, COUNT(ad.id) as total_reviews 
+            FROM destinations d
+            LEFT JOIN avis_destinations ad ON d.id = ad.destination_id
+            WHERE d.actif = 1";
     $params = [];
 
     if (!empty($search)) {
-        $sql .= " AND (nom LIKE ? OR aerodrome LIKE ? OR ville LIKE ? OR code_oaci LIKE ?)";
+        $sql .= " AND (d.nom LIKE ? OR d.aerodrome LIKE ? OR d.ville LIKE ? OR d.code_oaci LIKE ?)";
         $searchParam = "%$search%";
         $params = [$searchParam, $searchParam, $searchParam, $searchParam];
     }
 
     if ($type === 'ulm') {
-        $sql .= " AND acces_ulm = 1 AND acces_avion = 0";
+        $sql .= " AND d.acces_ulm = 1 AND d.acces_avion = 0";
     } elseif ($type === 'avion') {
-        $sql .= " AND acces_avion = 1";
+        $sql .= " AND d.acces_avion = 1";
     }
 
-    $sql .= " ORDER BY nom ASC";
+    $sql .= " GROUP BY d.id ORDER BY d.nom ASC";
 }
 
 $stmt = $pdo->prepare($sql);
@@ -618,6 +623,29 @@ unset($dest); // Détruire la référence
                         
                         <div class="destination-content">
                             <h3><?php echo h($dest['nom']); ?></h3>
+                            
+                            <?php if ($dest['total_reviews'] > 0): ?>
+                                <div class="rating-display" style="margin: 0.5rem 0; color: #f59e0b; font-size: 0.9rem;">
+                                    <?php 
+                                    $rating = round($dest['avg_rating'], 1);
+                                    $fullStars = floor($rating);
+                                    $hasHalfStar = ($rating - $fullStars) >= 0.5;
+                                    
+                                    for ($i = 0; $i < $fullStars; $i++) {
+                                        echo '⭐';
+                                    }
+                                    if ($hasHalfStar) {
+                                        echo '⭐';
+                                    }
+                                    for ($i = 0; $i < (5 - $fullStars - ($hasHalfStar ? 1 : 0)); $i++) {
+                                        echo '☆';
+                                    }
+                                    ?>
+                                    <span style="color: #666; font-weight: 500;">
+                                        <?php echo $rating; ?>/5 (<?php echo $dest['total_reviews']; ?> avis)
+                                    </span>
+                                </div>
+                            <?php endif; ?>
                             
                             <div class="destination-info">
                                 <span>🛫</span>
