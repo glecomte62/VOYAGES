@@ -3,10 +3,16 @@
  * VOYAGES - Planification d'itinéraire pour un voyage
  */
 
+// Activer l'affichage des erreurs pour le débogage
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once '../includes/session.php';
 requireLogin();
 require_once '../config/database.php';
 require_once '../includes/functions.php';
+require_once '../includes/geo-functions2.php';
 
 $pdo = getDBConnection();
 $voyage_id = intval($_GET['id'] ?? 0);
@@ -31,8 +37,8 @@ $stmt->execute([$voyage_id]);
 $etapes = $stmt->fetchAll();
 
 // Récupérer tous les terrains disponibles pour l'autocomplete
-$aerodromes = $pdo->query("SELECT id, nom, code_oaci, ville, latitude, longitude FROM aerodromes_fr ORDER BY nom ASC")->fetchAll();
-$ulm_bases = $pdo->query("SELECT id, nom, ville, latitude, longitude FROM ulm_bases_fr ORDER BY nom ASC")->fetchAll();
+$aerodromes = $pdo->query("SELECT id, nom, oaci as code_oaci, ville, lat as latitude, lon as longitude FROM aerodromes_fr ORDER BY nom ASC")->fetchAll();
+$ulm_bases = $pdo->query("SELECT id, nom, ville, lat as latitude, lon as longitude FROM ulm_bases_fr ORDER BY nom ASC")->fetchAll();
 $destinations = $pdo->query("SELECT id, nom, aerodrome as code_oaci, ville, latitude, longitude FROM destinations WHERE actif = 1 ORDER BY nom ASC")->fetchAll();
 
 // Traitement AJAX pour ajouter/modifier/supprimer des étapes
@@ -51,11 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             // Récupérer les infos du terrain
             $terrain_info = null;
             if ($terrain_type === 'aerodrome') {
-                $stmt = $pdo->prepare("SELECT nom, code_oaci, latitude, longitude FROM aerodromes_fr WHERE id = ?");
+                $stmt = $pdo->prepare("SELECT nom, oaci as code_oaci, lat as latitude, lon as longitude FROM aerodromes_fr WHERE id = ?");
                 $stmt->execute([$terrain_id]);
                 $terrain_info = $stmt->fetch();
             } elseif ($terrain_type === 'ulm_base') {
-                $stmt = $pdo->prepare("SELECT nom, latitude, longitude FROM ulm_bases_fr WHERE id = ?");
+                $stmt = $pdo->prepare("SELECT nom, lat as latitude, lon as longitude FROM ulm_bases_fr WHERE id = ?");
                 $stmt->execute([$terrain_id]);
                 $terrain_info = $stmt->fetch();
             } elseif ($terrain_type === 'destination') {
@@ -90,6 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $pdo->prepare("UPDATE voyages SET nombre_etapes = (SELECT COUNT(*) FROM voyage_etapes WHERE voyage_id = ?) WHERE id = ?")
                     ->execute([$voyage_id, $voyage_id]);
                 
+                // Recalculer les distances et temps de vol
+                updateVoyageDistancesAndTimes($pdo, $voyage_id);
+                
                 echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Terrain non trouvé']);
@@ -117,6 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $pdo->prepare("UPDATE voyages SET nombre_etapes = (SELECT COUNT(*) FROM voyage_etapes WHERE voyage_id = ?) WHERE id = ?")
                 ->execute([$voyage_id, $voyage_id]);
             
+            // Recalculer les distances et temps de vol
+            updateVoyageDistancesAndTimes($pdo, $voyage_id);
+            
             echo json_encode(['success' => true]);
             
         } elseif ($_POST['action'] === 'reorder_etapes') {
@@ -126,6 +138,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $pdo->prepare("UPDATE voyage_etapes SET ordre = ? WHERE id = ? AND voyage_id = ?")
                     ->execute([$index + 1, $etape_id, $voyage_id]);
             }
+            
+            // Recalculer les distances et temps de vol après réorganisation
+            updateVoyageDistancesAndTimes($pdo, $voyage_id);
             
             echo json_encode(['success' => true]);
         }
@@ -145,6 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <title>Planifier l'itinéraire - <?php echo h($voyage['titre']); ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/header.css">
+    
+    <!-- Leaflet.js pour la carte interactive -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- SortableJS pour drag & drop des étapes -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
     <style>
         .planner-container {
             max-width: 1400px;
@@ -371,10 +394,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             height: 600px;
             background: #f1f5f9;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
+        }
+        
+        .map-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
         }
         
         .btn {
@@ -415,14 +460,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         <div class="planner-header">
             <h1>🗺️ <?php echo h($voyage['titre']); ?></h1>
             <div class="voyage-info">
-                <div class="voyage-info-item">
-                    📅 <?php echo formatDate($voyage['date_debut']); ?> - <?php echo formatDate($voyage['date_fin']); ?>
-                </div>
+                <?php if ($voyage['date_debut'] && $voyage['date_fin']): ?>
+                    <div class="voyage-info-item">
+                        📅 <?php echo formatDate($voyage['date_debut']); ?> - <?php echo formatDate($voyage['date_fin']); ?>
+                    </div>
+                <?php endif; ?>
                 <?php if ($voyage['aeronef']): ?>
                     <div class="voyage-info-item">
                         ✈️ <?php echo h($voyage['aeronef']); ?>
                     </div>
                 <?php endif; ?>
+                <div class="voyage-info-item">
+                    ⚡ <?php echo $voyage['vitesse_croisiere'] ?? 175; ?> km/h
+                </div>
                 <div class="voyage-info-item">
                     👥 <?php echo $voyage['nombre_passagers']; ?> passager(s)
                 </div>
@@ -462,7 +512,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <textarea id="notes-etape" rows="2" placeholder="Notes pour cette étape..."></textarea>
                     </div>
                     
-                    <button class="btn btn-primary" onclick="addEtape()" style="width: 100%;">
+                    <button type="button" class="btn btn-primary" onclick="addEtape()" style="width: 100%;">
                         Ajouter l'étape
                     </button>
                 </div>
@@ -477,9 +527,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                     <div class="etape-code"><?php echo h($etape['terrain_code_oaci']); ?></div>
                                 <?php endif; ?>
                                 <div class="etape-actions">
-                                    <button class="btn-icon" onclick="deleteEtape(<?php echo $etape['id']; ?>)" title="Supprimer">🗑️</button>
+                                    <button type="button" class="btn-icon" onclick="event.stopPropagation(); deleteEtape(<?php echo $etape['id']; ?>)" title="Supprimer">🗑️</button>
                                 </div>
                             </div>
+                            
+                            <?php if ($etape['distance_precedente'] > 0): ?>
+                                <div class="etape-details">
+                                    📏 <?php echo number_format($etape['distance_precedente'], 0); ?> km
+                                    | ⏱️ <?php echo formatFlightTime($etape['temps_vol_precedent']); ?>
+                                </div>
+                            <?php endif; ?>
+                            
                             <?php if ($etape['date_arrivee'] || $etape['date_depart']): ?>
                                 <div class="etape-details">
                                     <?php if ($etape['date_arrivee']): ?>
@@ -500,9 +558,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             
             <div class="map-panel">
                 <h2 style="margin-bottom: 1rem;">Carte de l'itinéraire</h2>
-                <div class="map-container">
-                    🗺️ Carte interactive (à implémenter avec Leaflet ou Google Maps)
-                </div>
+                
+                <?php if (count($etapes) > 0): ?>
+                    <div class="map-stats">
+                        <div class="stat-card">
+                            <div class="stat-value"><?php echo count($etapes); ?></div>
+                            <div class="stat-label">Étapes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value"><?php echo number_format($voyage['distance_totale'] ?? 0, 0); ?> km</div>
+                            <div class="stat-label">Distance totale</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value"><?php echo formatFlightTime($voyage['temps_vol_total'] ?? 0); ?></div>
+                            <div class="stat-label">Temps de vol</div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
+                <div id="map" class="map-container"></div>
                 
                 <div class="planner-actions">
                     <a href="voyage-detail.php?id=<?php echo $voyage_id; ?>" class="btn btn-primary">
@@ -630,7 +704,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    location.reload();
+                    console.log('Reload après action AJAX');
+                    window.location.href = window.location.href.split('#')[0];
                 } else {
                     alert('Erreur: ' + (data.message || 'Impossible d\'ajouter l\'étape'));
                 }
@@ -661,6 +736,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 }
             });
         }
+        
+        // Initialisation de la carte Leaflet
+        const etapesData = <?php echo json_encode($etapes); ?>;
+        let map = null;
+        let routePolyline = null;
+        
+        function initMap() {
+            if (etapesData.length === 0) {
+                return;
+            }
+            
+            // Centrer la carte sur la première étape
+            const firstEtape = etapesData[0];
+            map = L.map('map').setView([firstEtape.latitude, firstEtape.longitude], 8);
+            
+            // Ajouter la couche de tuiles OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+            
+            // Ajouter les markers pour chaque étape
+            const routePoints = [];
+            etapesData.forEach((etape, index) => {
+                const marker = L.marker([etape.latitude, etape.longitude]).addTo(map);
+                
+                let popupContent = `<strong>${index + 1}. ${etape.terrain_nom}</strong>`;
+                if (etape.terrain_code_oaci) {
+                    popupContent += `<br>${etape.terrain_code_oaci}`;
+                }
+                if (etape.distance_precedente > 0) {
+                    popupContent += `<br>📏 ${Math.round(etape.distance_precedente)} km`;
+                    popupContent += `<br>⏱️ ${formatTime(etape.temps_vol_precedent)}`;
+                }
+                if (etape.notes) {
+                    popupContent += `<br><em>${etape.notes}</em>`;
+                }
+                
+                marker.bindPopup(popupContent);
+                routePoints.push([etape.latitude, etape.longitude]);
+            });
+            
+            // Tracer la route entre les étapes
+            if (routePoints.length > 1) {
+                routePolyline = L.polyline(routePoints, {
+                    color: '#0ea5e9',
+                    weight: 3,
+                    opacity: 0.7
+                }).addTo(map);
+                
+                // Ajuster le zoom pour voir toute la route
+                map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+            }
+        }
+        
+        function formatTime(hours) {
+            const h = Math.floor(hours);
+            const m = Math.round((hours - h) * 60);
+            if (h > 0 && m > 0) {
+                return `${h}h ${m}min`;
+            } else if (h > 0) {
+                return `${h}h`;
+            } else {
+                return `${m}min`;
+            }
+        }
+        
+        // Initialiser la carte au chargement
+        document.addEventListener('DOMContentLoaded', initMap);
+
+        // Drag & drop des étapes avec SortableJS
+        document.addEventListener('DOMContentLoaded', function() {
+            const etapesList = document.getElementById('etapes-list');
+            if (!etapesList) return;
+            new Sortable(etapesList, {
+                animation: 150,
+                handle: '.etape-header',
+                onEnd: function () {
+                    // Récupérer le nouvel ordre des IDs
+                    const ids = Array.from(etapesList.querySelectorAll('.etape-item')).map(li => li.getAttribute('data-etape-id'));
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'reorder_etapes',
+                            etapes: JSON.stringify(ids)
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Erreur lors du réordonnancement : ' + (data.message || 'inconnue'));
+                        }
+                    });
+                }
+            });
+        });
+        
+        window.onerror = function(message, source, lineno, colno, error) {
+    alert('Erreur JS : ' + message + '\n' + source + ':' + lineno);
+};
     </script>
 </body>
 </html>

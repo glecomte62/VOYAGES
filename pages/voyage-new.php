@@ -15,10 +15,11 @@ $success = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titre = trim($_POST['titre'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $date_debut = $_POST['date_debut'] ?? '';
-    $date_fin = $_POST['date_fin'] ?? '';
+    $date_debut = $_POST['date_debut'] ?? null;
+    $date_fin = $_POST['date_fin'] ?? null;
     $aeronef = trim($_POST['aeronef'] ?? '');
     $type_aeronef = $_POST['type_aeronef'] ?? 'ulm';
+    $vitesse_croisiere = intval($_POST['vitesse_croisiere'] ?? 175);
     $nombre_passagers = intval($_POST['nombre_passagers'] ?? 1);
     $budget_total = floatval($_POST['budget_total'] ?? 0);
     $public = isset($_POST['public']) ? 1 : 0;
@@ -27,13 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($titre)) {
         $errors[] = "Le titre est obligatoire";
     }
-    if (empty($date_debut)) {
-        $errors[] = "La date de début est obligatoire";
-    }
-    if (empty($date_fin)) {
-        $errors[] = "La date de fin est obligatoire";
-    }
-    if ($date_fin < $date_debut) {
+    if (!empty($date_debut) && !empty($date_fin) && $date_fin < $date_debut) {
         $errors[] = "La date de fin doit être après la date de début";
     }
     
@@ -42,19 +37,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("
                 INSERT INTO voyages (
                     user_id, titre, description, date_debut, date_fin, 
-                    aeronef, type_aeronef, nombre_passagers, budget_total,
+                    aeronef, type_aeronef, vitesse_croisiere, nombre_passagers, budget_total,
                     public, statut
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'planifie')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'planifie')
             ");
             
             $stmt->execute([
                 $_SESSION['user_id'],
                 $titre,
                 $description,
-                $date_debut,
-                $date_fin,
+                $date_debut ?: null,
+                $date_fin ?: null,
                 $aeronef,
                 $type_aeronef,
+                $vitesse_croisiere,
                 $nombre_passagers,
                 $budget_total,
                 $public
@@ -276,15 +272,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="date_debut">Date de début <span class="required">*</span></label>
-                        <input type="date" id="date_debut" name="date_debut" required
+                        <label for="date_debut">Date de début</label>
+                        <input type="date" id="date_debut" name="date_debut"
                                value="<?php echo h($_POST['date_debut'] ?? ''); ?>">
+                        <p class="form-help">Optionnel - pour un guide de voyage sans dates fixes</p>
                     </div>
                     
                     <div class="form-group">
-                        <label for="date_fin">Date de fin <span class="required">*</span></label>
-                        <input type="date" id="date_fin" name="date_fin" required
+                        <label for="date_fin">Date de fin</label>
+                        <input type="date" id="date_fin" name="date_fin"
                                value="<?php echo h($_POST['date_fin'] ?? ''); ?>">
+                        <p class="form-help">Optionnel</p>
                     </div>
                 </div>
                 
@@ -304,6 +302,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <option value="autre" <?php echo ($_POST['type_aeronef'] ?? '') === 'autre' ? 'selected' : ''; ?>>Autre</option>
                         </select>
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vitesse_croisiere">Vitesse de croisière (km/h)</label>
+                    <input type="number" id="vitesse_croisiere" name="vitesse_croisiere" min="100" max="300" step="5"
+                           value="<?php echo h($_POST['vitesse_croisiere'] ?? '175'); ?>">
+                    <p class="form-help">Utilisée pour calculer les temps de vol entre étapes (150-200 km/h typique pour ULM/petit avion)</p>
                 </div>
                 
                 <div class="form-row">

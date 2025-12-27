@@ -115,6 +115,7 @@ $baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
                 </div>
             </div>
 
+
             <div class="nav-dropdown">
                 <button class="nav-link dropdown-toggle">
                     <span class="nav-icon">👥</span>
@@ -124,20 +125,20 @@ $baseUrl = (basename(dirname($_SERVER['PHP_SELF'])) === 'pages') ? '../' : '';
                 <div class="dropdown-menu">
                     <a href="<?php echo $baseUrl; ?>pages/clubs.php">Clubs & Aéroclubs</a>
                     <a href="<?php echo $baseUrl; ?>pages/membres.php">Annuaire pilotes</a>
+                    <a href="<?php echo $baseUrl; ?>pages/guides.php">🗺️ Guides de voyages</a>
                 </div>
             </div>
 
             <?php if (isLoggedIn()): ?>
             <div class="nav-dropdown">
                 <button class="nav-link dropdown-toggle">
-                    <span class="nav-icon">✈️</span>
-                    Mes Voyages
+                    <span class="nav-icon">🗺️</span>
+                    Guides de voyages
                     <span class="dropdown-arrow">▼</span>
                 </button>
                 <div class="dropdown-menu">
-                    <a href="<?php echo $baseUrl; ?>pages/voyages.php">Tous mes voyages</a>
-                    <a href="<?php echo $baseUrl; ?>pages/voyage-new.php">+ Nouveau voyage</a>
-                    <a href="<?php echo $baseUrl; ?>pages/itineraire-planner.php">Planificateur d'itinéraire</a>
+                    <a href="<?php echo $baseUrl; ?>pages/guides.php">Tous les guides</a>
+                    <a href="<?php echo $baseUrl; ?>pages/guides-add.php">+ Nouveau guide</a>
                 </div>
             </div>
             <?php endif; ?>
